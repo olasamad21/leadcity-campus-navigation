@@ -1,0 +1,15 @@
+# Example local.properties file
+# Copy this to local.properties and add your actual values
+# DO NOT commit local.properties to version control
+
+# Android SDK location (automatically set by Android Studio)
+sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Flutter SDK location (automatically set by Flutter)
+flutter.sdk=C\:\\src\\flutter
+
+# Google Maps API Key - Add your key here
+# Get your key from: https://console.cloud.google.com/google/maps-apis
+# IMPORTANT: Restrict this key in Google Cloud Console to your app's package name and SHA-1
+GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+

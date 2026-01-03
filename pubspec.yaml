@@ -36,16 +36,16 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Google Maps
-  google_maps_flutter: ^2.5.0
+  google_maps_flutter: ^2.14.0
   
   # Text to Speech
-  flutter_tts: ^4.0.2
+  flutter_tts: ^4.2.3
   
   # Location Services
-  geolocator: ^11.0.0
+  geolocator: ^14.0.2
   
   # HTTP requests for Directions API
-  http: ^1.2.0
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
