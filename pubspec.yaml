@@ -29,6 +29,9 @@ dependencies:
   # HTTP requests for Directions API
   http: ^1.6.0
 
+  # XML parsing for KML files
+  xml: ^6.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,3 +55,4 @@ flutter:
 
   assets:
     - assets/images/logo.jpg
+    - assets/Lead City University Campus Map.kml

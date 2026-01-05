@@ -1,15 +1,68 @@
 import '../models/building.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../services/kml_parser_service.dart';
 
 /// Campus building data
-/// This file contains all 42 buildings with their coordinates
-/// In production, this would be loaded from a JSON file or database
+/// Loads buildings from KML file, with fallback to hardcoded data
 class BuildingsData {
   // Lead City University approximate center coordinates
   static const LatLng _campusCenter = LatLng(7.3964, 3.9167);
+  
+  // Cache for KML-loaded buildings
+  static List<Building>? _kmlBuildings;
+  static bool _isLoading = false;
+  static bool _loadAttempted = false;
 
-  /// Get all buildings
+  /// Load buildings from KML file
+  static Future<List<Building>> loadFromKml() async {
+    if (_kmlBuildings != null) {
+      return _kmlBuildings!;
+    }
+    
+    if (_isLoading) {
+      // Wait for ongoing load
+      while (_isLoading) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      return _kmlBuildings ?? _getHardcodedBuildings();
+    }
+    
+    _isLoading = true;
+    _loadAttempted = true;
+    
+    try {
+      final parser = KmlParserService();
+      _kmlBuildings = await parser.parseKmlFile(
+        'assets/Lead City University Campus Map.kml',
+      );
+      _isLoading = false;
+      return _kmlBuildings!;
+    } catch (e) {
+      _isLoading = false;
+      // Fallback to hardcoded data on error
+      return _getHardcodedBuildings();
+    }
+  }
+
+  /// Get all buildings (uses KML if loaded, otherwise hardcoded)
   static List<Building> getAllBuildings() {
+    // If KML data is available, use it
+    if (_kmlBuildings != null) {
+      return _kmlBuildings!;
+    }
+    
+    // If KML loading hasn't been attempted yet, return hardcoded
+    // (KML will be loaded asynchronously in app startup)
+    if (!_loadAttempted) {
+      return _getHardcodedBuildings();
+    }
+    
+    // If loading failed, return hardcoded as fallback
+    return _getHardcodedBuildings();
+  }
+
+  /// Get hardcoded buildings (fallback data)
+  static List<Building> _getHardcodedBuildings() {
     return [
       // Academic Buildings (17)
       Building(
