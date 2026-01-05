@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
-/// Splash screen with app logo and auto-navigation
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,12 +17,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -31,16 +30,16 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _controller,
       curve: Curves.easeIn,
     ));
-    
+
     _controller.forward();
-    
-    // Navigate to home screen after 2-3 seconds
-    Future.delayed(const Duration(seconds: 2), () {
+
+    // Navigate to home screen after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const HomeScreen(),
+            const HomeScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(
                 opacity: animation,
@@ -80,13 +79,13 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App Icon/Logo
+                // --- CUSTOM LOGO SECTION ---
                 Container(
-                  width: 128,
-                  height: 128,
+                  width: 150, // Slightly larger for the crest
+                  height: 150,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(24),
+                    color: Colors.white,
+                    shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withOpacity(0.3),
@@ -95,30 +94,44 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.navigation,
-                    size: 64,
-                    color: Colors.white,
+                  padding: const EdgeInsets.all(4), // White border effect
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback if image isn't found
+                        return const Icon(
+                            Icons.school,
+                            size: 64,
+                            color: AppColors.primary
+                        );
+                      },
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                // App Name
+                // ---------------------------
+
+                const SizedBox(height: 32),
+
                 Text(
                   'Lead City Navigation',
-                  style: Theme.of(context).textTheme.displayLarge,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                // Subtitle
                 Text(
-                  'Campus Navigation System',
+                  'Knowledge for Self-reliance',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                    fontStyle: FontStyle.italic,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
-                // Loading indicator
                 const CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
@@ -130,4 +143,3 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-
