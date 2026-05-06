@@ -1,7 +1,8 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../data/campus_graph.dart';
 import '../models/building.dart';
+import 'campus_routing_service.dart';
 
 /// Navigation instruction model
 class NavigationInstruction {
@@ -27,6 +28,9 @@ class RouteInfo {
   final LatLng startLocation;
   final LatLng endLocation;
 
+  /// On-campus solved route (same path as [polylinePoints] / [instructions]).
+  final CampusRoute campusRoute;
+
   RouteInfo({
     required this.polylinePoints,
     required this.instructions,
@@ -34,66 +38,69 @@ class RouteInfo {
     required this.estimatedTime,
     required this.startLocation,
     required this.endLocation,
+    required this.campusRoute,
   });
 }
 
-/// Service for route calculation and navigation
+/// Campus route calculation via the on-campus graph (no Directions HTTP API).
 class NavigationService {
-  static final NavigationService _instance = NavigationService._internal();
-  factory NavigationService() => _instance;
-  NavigationService._internal();
+  NavigationService._internal(this._campusRouting);
 
-  // Google Directions API key - loaded from environment or defaults to empty
-  // In production, use flutter_dotenv or similar to load from .env file
+  final CampusRoutingService _campusRouting;
+
+  static NavigationService? _instance;
+
+  /// Singleton. Optional [campusRouting] is applied only on the first creation.
+  factory NavigationService({CampusRoutingService? campusRouting}) {
+    return _instance ??= NavigationService._internal(
+      campusRouting ?? CampusRoutingService(campusGraph),
+    );
+  }
+
+  /// Kept for compatibility with existing startup code ([app.dart]); the map
+  /// SDK may still use a native key — routing no longer calls Google Directions.
   static String _apiKey = const String.fromEnvironment(
     'GOOGLE_MAPS_API_KEY',
     defaultValue: '',
   );
-  static const String _baseUrl = 'https://maps.googleapis.com/maps/api/directions/json';
-  
-  /// Set API key programmatically (for runtime configuration)
+
+  /// Set Maps API key programmatically (routing ignores it).
   static void setApiKey(String key) {
     _apiKey = key;
   }
-  
-  /// Get current API key (for validation)
+
   static String get apiKey => _apiKey;
 
-  /// Calculate route between two points
+  /// Snaps onto the walkway graph and runs shortest-path routing.
+  ///
+  /// Returns `null` when there is **no graph path** between the nearest nodes
+  /// to [origin] and [destination]: e.g. disconnected graph, entrances not on
+  /// the network, or data gaps. Treat as an error state — **do not assume a
+  /// route exists**. The UI should show a clear message such as **"Route not
+  /// available"** (origin/destination not reachable via the campus graph).
+  ///
+  /// [mode] is ignored (previously passed to Google Directions walking mode).
   Future<RouteInfo?> calculateRoute({
     required LatLng origin,
     required LatLng destination,
     String mode = 'walking',
   }) async {
-    if (_apiKey.isEmpty) {
-      throw StateError('Google Maps API key not configured. Call NavigationService.setApiKey() or set GOOGLE_MAPS_API_KEY environment variable.');
-    }
-    
-    try {
-      final url = Uri.parse(
-        '$_baseUrl?origin=${origin.latitude},${origin.longitude}'
-        '&destination=${destination.latitude},${destination.longitude}'
-        '&mode=$mode'
-        '&key=$_apiKey',
+    final campusRoute = _campusRouting.calculateRoute(origin, destination);
+    if (campusRoute == null) {
+      debugPrint(
+        'Campus route unavailable: no path on graph between nearest nodes '
+        'to origin and destination.',
       );
-
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        
-        if (data['status'] == 'OK' && data['routes'].isNotEmpty) {
-          return _parseRouteResponse(data, origin, destination);
-        }
-      }
-      
-      return null;
-    } catch (e) {
       return null;
     }
+    return _routeInfoFromCampusRoute(
+      campusRoute,
+      origin: origin,
+      destination: destination,
+    );
   }
 
-  /// Calculate route between two buildings
+  /// Calculate route between two buildings (entrance coordinates).
   Future<RouteInfo?> calculateRouteBetweenBuildings({
     required Building startBuilding,
     required Building endBuilding,
@@ -104,90 +111,56 @@ class NavigationService {
     );
   }
 
-  /// Parse Google Directions API response
-  RouteInfo _parseRouteResponse(
-    Map<String, dynamic> data,
-    LatLng origin,
-    LatLng destination,
-  ) {
-    final route = data['routes'][0];
-    final leg = route['legs'][0];
-    
-    // Decode polyline
-    final overviewPolyline = route['overview_polyline']['points'];
-    final polylinePoints = _decodePolyline(overviewPolyline);
-    
-    // Parse steps for instructions
-    final steps = leg['steps'] as List;
-    final instructions = <NavigationInstruction>[];
-    
-    for (var step in steps) {
-      final instruction = NavigationInstruction(
-        instruction: step['html_instructions']
-            .toString()
-            .replaceAll(RegExp(r'<[^>]*>'), ''), // Remove HTML tags
-        distance: (step['distance']['value'] as int).toDouble(),
-        location: LatLng(
-          (step['end_location']['lat'] as num).toDouble(),
-          (step['end_location']['lng'] as num).toDouble(),
-        ),
-        streetName: step['html_instructions']
-            .toString()
-            .replaceAll(RegExp(r'<[^>]*>'), ''),
-      );
-      instructions.add(instruction);
-    }
-    
-    final totalDistance = (leg['distance']['value'] as int).toDouble();
-    final estimatedTime = leg['duration']['value'] as int;
-    
+  RouteInfo _routeInfoFromCampusRoute(
+    CampusRoute route, {
+    required LatLng origin,
+    required LatLng destination,
+  }) {
+    final turnByTurn = _turnInstructionsFromPath(route);
+    final instructions = turnByTurn.isEmpty
+        ? <NavigationInstruction>[
+            NavigationInstruction(
+              instruction:
+                  'Follow the highlighted campus path toward your destination.',
+              distance: route.totalDistanceMeters,
+              location: destination,
+            ),
+          ]
+        : turnByTurn;
+
     return RouteInfo(
-      polylinePoints: polylinePoints,
+      polylinePoints: route.polylinePoints,
       instructions: instructions,
-      totalDistance: totalDistance,
-      estimatedTime: estimatedTime,
+      totalDistance: route.totalDistanceMeters,
+      estimatedTime: route.estimatedWalkingMinutes * 60,
       startLocation: origin,
       endLocation: destination,
+      campusRoute: route,
     );
   }
 
-  /// Decode polyline string to list of LatLng points
-  List<LatLng> _decodePolyline(String encoded) {
-    final List<LatLng> points = [];
-    int index = 0;
-    int lat = 0;
-    int lng = 0;
-
-    while (index < encoded.length) {
-      int shift = 0;
-      int result = 0;
-      int byte;
-
-      do {
-        byte = encoded.codeUnitAt(index++) - 63;
-        result |= (byte & 0x1F) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      final int deltaLat = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1);
-      lat += deltaLat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        byte = encoded.codeUnitAt(index++) - 63;
-        result |= (byte & 0x1F) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      final int deltaLng = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1);
-      lng += deltaLng;
-
-      points.add(LatLng(lat / 1e5, lng / 1e5));
+  /// One [NavigationInstruction] per graph edge that has a voice line, with
+  /// location at the maneuver node for live navigation.
+  List<NavigationInstruction> _turnInstructionsFromPath(CampusRoute route) {
+    final graph = _campusRouting.graph;
+    final out = <NavigationInstruction>[];
+    final ids = route.nodeIds;
+    for (var i = 0; i < ids.length - 1; i++) {
+      final fromId = ids[i];
+      final toId = ids[i + 1];
+      final text = graph.getEdgeInstruction(fromId, toId);
+      if (text == null) continue;
+      final toNode = graph.nodes[toId];
+      if (toNode == null) continue;
+      out.add(
+        NavigationInstruction(
+          instruction: text,
+          distance: graph.getEdgeDistance(fromId, toId),
+          location: toNode.position,
+        ),
+      );
     }
-
-    return points;
+    return out;
   }
 
   /// Format distance for display
@@ -211,4 +184,3 @@ class NavigationService {
     }
   }
 }
-

@@ -33,7 +33,7 @@ android {
         // Priority: local.properties > gradle.properties > environment variable > default
         val mapsApiKey = project.findProperty("GOOGLE_MAPS_API_KEY") as String?
             ?: System.getenv("GOOGLE_MAPS_API_KEY")
-            ?: "AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ" // Fallback for development only
+            ?: "" // Key must be set in local.properties
         
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = mapsApiKey
     }

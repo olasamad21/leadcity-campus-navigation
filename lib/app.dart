@@ -76,7 +76,7 @@ class _LeadCityNavigationAppState extends State<LeadCityNavigationApp> {
         // For development: Set API key manually for testing
         // TODO: Remove this before production - use secure storage instead
         // Uncomment and set your Directions API key for testing:
-        // NavigationService.setApiKey('YOUR_DIRECTIONS_API_KEY_HERE');
+           NavigationService.setApiKey(const String.fromEnvironment('MAPS_API_KEY'));
       }
     });
   }

@@ -26,9 +26,6 @@ dependencies:
   # Location Services
   geolocator: ^14.0.2
 
-  # HTTP requests for Directions API
-  http: ^1.6.0
-
   # XML parsing for KML files
   xml: ^6.0.0
 
