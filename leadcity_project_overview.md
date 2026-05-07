@@ -387,7 +387,7 @@ Home Screen
 
 ### 9.1 Google Maps APIs
 
-**API Key:** AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ
+**API Key:** YOUR_API_KEY_HERE
 
 **Enabled Services:**
 1. **Maps SDK for Android**
@@ -791,7 +791,7 @@ Home Screen
 
 ### Appendix C: API Credentials
 - Project: LeadCity-Navigation
-- API Key: AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ
+- API Key: YOUR_API_KEY_HERE
 - Package: com.leadcity.leadcity_navigation
 - Restrictions: Android apps only, Maps SDK for Android
 

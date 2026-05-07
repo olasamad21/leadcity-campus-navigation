@@ -5,19 +5,19 @@
 ### For Maps SDK (Android):
 Add to `android/local.properties`:
 ```
-GOOGLE_MAPS_API_KEY=AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ
+GOOGLE_MAPS_API_KEY=YOUR_API_KEY_HERE
 ```
 
 ### For Directions API (Dart):
 Option A - Set in code (temporary for testing):
 Edit `lib/app.dart` line 51, uncomment and set:
 ```dart
-NavigationService.setApiKey('AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ');
+NavigationService.setApiKey('YOUR_API_KEY_HERE');
 ```
 
 Option B - Set environment variable:
 ```bash
-$env:GOOGLE_MAPS_API_KEY="AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ"
+$env:GOOGLE_MAPS_API_KEY="YOUR_API_KEY_HERE"
 flutter run
 ```
 
