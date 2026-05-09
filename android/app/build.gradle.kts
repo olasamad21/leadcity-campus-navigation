@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -16,7 +18,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -29,11 +31,12 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
-        // Load Google Maps API key from properties
-        // Priority: local.properties > gradle.properties > environment variable > default
-        val mapsApiKey = project.findProperty("GOOGLE_MAPS_API_KEY") as String?
-            ?: System.getenv("GOOGLE_MAPS_API_KEY")
-            ?: "" // Key must be set in local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+        val mapsApiKey = localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""
         
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = mapsApiKey
     }
