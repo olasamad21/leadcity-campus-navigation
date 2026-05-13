@@ -42,8 +42,13 @@ class VoiceNavigationController {
   /// Subset of [_route.instructions] aligned with anchors (same length).
   late final List<String> _instructionTexts;
 
-  /// Next index into [_instructionTexts] / [_instructionAnchors].
-  int _nextSpeakIndex = 0;
+  /// Tracks which instruction indices have had their approach cue spoken
+  /// ("In 40 metres, turn X" — fired between 35–45 m from the maneuver node).
+  final Set<int> _announcedApproach = {};
+
+  /// Tracks which instruction indices have had their "now" cue spoken
+  /// ("Turn X now" — fired within 15 m of the maneuver node).
+  final Set<int> _announcedNow = {};
 
   bool _hasAnnouncedArrival = false;
 
@@ -62,17 +67,39 @@ class VoiceNavigationController {
     return anchors;
   }
 
-  /// GPS tick: announce the next unspoken maneuver when within 20 m of its node.
+  /// GPS tick: fire two-stage distance-based announcements for every unspoken
+  /// instruction that contains 'left' or 'right'. Null instructions are skipped.
+  ///
+  /// Stage 1 (approach) — 35–45 m from maneuver node:
+  ///   speaks "In 40 metres, turn left/right".
+  /// Stage 2 (now)      — ≤15 m from maneuver node:
+  ///   speaks "Turn left/right now".
   void onLocationUpdate(LatLng currentPosition) {
-    if (_nextSpeakIndex >= _instructionTexts.length) return;
+    for (var i = 0; i < _instructionTexts.length; i++) {
+      final text = _instructionTexts[i];
 
-    final anchor = _instructionAnchors[_nextSpeakIndex];
-    final distanceM =
-        haversineDistanceMetersAnchor(currentPosition, anchor);
+      // Only fire for turn instructions.
+      final lowerText = text.toLowerCase();
+      if (!lowerText.contains('left') && !lowerText.contains('right')) continue;
 
-    if (distanceM < 20.0) {
-      unawaited(_voiceService.speak(_instructionTexts[_nextSpeakIndex]));
-      _nextSpeakIndex++;
+      final anchor = _instructionAnchors[i];
+      final distanceM = haversineDistanceMetersAnchor(currentPosition, anchor);
+
+      // Stage 2 — within 15 m: speak "Turn X now".
+      if (distanceM <= 15.0 && !_announcedNow.contains(i)) {
+        _announcedNow.add(i);
+        _announcedApproach.add(i); // ensure approach is also marked
+        final direction = lowerText.contains('left') ? 'left' : 'right';
+        unawaited(_voiceService.speak('Turn $direction now'));
+        continue;
+      }
+
+      // Stage 1 — 35–45 m: speak "In 40 metres, turn X".
+      if (distanceM >= 35.0 && distanceM <= 45.0 && !_announcedApproach.contains(i)) {
+        _announcedApproach.add(i);
+        final direction = lowerText.contains('left') ? 'left' : 'right';
+        unawaited(_voiceService.speak('In 40 metres, turn $direction'));
+      }
     }
   }
 
@@ -91,22 +118,25 @@ class VoiceNavigationController {
   }
 
   void reset() {
-    _nextSpeakIndex = 0;
+    _announcedApproach.clear();
+    _announcedNow.clear();
     _hasAnnouncedArrival = false;
   }
 
-  /// Index of the next unspoken instruction in [CampusRoute.instructions]
-  /// (same as index into the paired steps built at construction; equals paired
-  /// count when all have been spoken).
-  int get nextInstructionIndex => _nextSpeakIndex >= _instructionTexts.length
-      ? _instructionTexts.length
-      : _nextSpeakIndex;
+  /// Index of the next instruction whose Stage 2 ("now") cue has not yet fired.
+  /// Equals [_instructionTexts.length] when all have been spoken.
+  int get nextInstructionIndex {
+    for (var i = 0; i < _instructionTexts.length; i++) {
+      if (!_announcedNow.contains(i)) return i;
+    }
+    return _instructionTexts.length;
+  }
 
-  /// Text of the upcoming instruction, or null if none left.
-  String? get nextInstructionText =>
-      _nextSpeakIndex >= _instructionTexts.length
-          ? null
-          : _instructionTexts[_nextSpeakIndex];
+  /// Text of the next unspoken instruction (Stage 2 not yet fired), or null.
+  String? get nextInstructionText {
+    final idx = nextInstructionIndex;
+    return idx < _instructionTexts.length ? _instructionTexts[idx] : null;
+  }
 
   /// Haversine distance in metres (pure Dart via `dart:math`).
   static double haversineDistanceMetersAnchor(LatLng a, LatLng b) {

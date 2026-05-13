@@ -290,7 +290,7 @@ class _MapScreenState extends State<MapScreen> with AutomaticKeepAliveClientMixi
       body: Stack(
         children: [
           GoogleMap(
-            initialCameraPosition: const CameraPosition(target: _campusCenter, zoom: 17.0),
+            initialCameraPosition: const CameraPosition(target: LatLng(7.3285, 3.8790), zoom: 16.5),
             onMapCreated: (controller) => _mapController = controller,
             onTap: _onMapTap,
             polygons: _showBuildings ? _polygons : {},

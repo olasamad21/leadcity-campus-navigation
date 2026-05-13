@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/campus_graph.dart';
@@ -58,7 +59,24 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
-    await _fitMapToCampusPolyline(_campus);
+    final points = _campus?.polylinePoints ?? [];
+    if (points.isNotEmpty) {
+      double minLat = points.first.latitude;
+      double maxLat = points.first.latitude;
+      double minLng = points.first.longitude;
+      double maxLng = points.first.longitude;
+      for (final p in points) {
+        minLat = math.min(minLat, p.latitude);
+        maxLat = math.max(maxLat, p.latitude);
+        minLng = math.min(minLng, p.longitude);
+        maxLng = math.max(maxLng, p.longitude);
+      }
+      final bounds = LatLngBounds(
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
+      );
+      await controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+    }
   }
 
   /// Fits camera to [campus.polylinePoints] with 60px padding (Flutter logical pixels).
@@ -176,7 +194,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                   polylineId: const PolylineId('campus_route'),
                   points: campus.polylinePoints,
                   color: _polylineBlue.shade700,
-                  width: 6,
+                  width: 14,
                 ),
               },
               markers: {

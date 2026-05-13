@@ -203,7 +203,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   polylineId: const PolylineId('route'),
                   points: widget.routeInfo.polylinePoints,
                   color: AppColors.primary,
-                  width: 8,
+                  width: 14,
                 ),
               },
               markers: {

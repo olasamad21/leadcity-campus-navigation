@@ -4,8 +4,9 @@ import 'dart:math' as math;
 // ============================================================
 // CAMPUS GRAPH — Lead City University Navigation
 // ============================================================
-// AUTO-GENERATED from GPX — 40 junction connections added: May 5, 2026 11:31:14 AM
-// 164 nodes | 163 edges | 3625m total | ~20.0m spacing
+// Generated from complete campus GPX walk (May 5, 2026)
+// 434 nodes | 424 path edges | 335 junction connections
+// 10 segments covering ~8.2km of campus paths
 // ============================================================
 
 class CampusNode {
@@ -13,13 +14,7 @@ class CampusNode {
   final LatLng position;
   final String? label;
   final List<String> connectedNodeIds;
-
-  const CampusNode({
-    required this.id,
-    required this.position,
-    this.label,
-    required this.connectedNodeIds,
-  });
+  const CampusNode({required this.id, required this.position, this.label, required this.connectedNodeIds});
 }
 
 class CampusEdge {
@@ -27,13 +22,7 @@ class CampusEdge {
   final String toId;
   final double distanceMeters;
   final String? voiceInstruction;
-
-  const CampusEdge({
-    required this.fromId,
-    required this.toId,
-    required this.distanceMeters,
-    this.voiceInstruction,
-  });
+  const CampusEdge({required this.fromId, required this.toId, required this.distanceMeters, this.voiceInstruction});
 }
 
 class CampusRoute {
@@ -42,37 +31,25 @@ class CampusRoute {
   final double totalDistanceMeters;
   final int estimatedWalkingMinutes;
   final List<String> nodeIds;
-
-  const CampusRoute({
-    required this.polylinePoints,
-    required this.instructions,
-    required this.totalDistanceMeters,
-    required this.estimatedWalkingMinutes,
-    required this.nodeIds,
-  });
+  const CampusRoute({required this.polylinePoints, required this.instructions, required this.totalDistanceMeters, required this.estimatedWalkingMinutes, required this.nodeIds});
 }
 
 class CampusGraph {
   final Map<String, CampusNode> nodes;
   final List<CampusEdge> edges;
-
   CampusGraph({required this.nodes, required this.edges});
 
   List<CampusNode> getNeighbours(String nodeId) {
     final node = nodes[nodeId];
     if (node == null) return [];
-    return node.connectedNodeIds
-        .map((id) => nodes[id])
-        .whereType<CampusNode>()
-        .toList();
+    return node.connectedNodeIds.map((id) => nodes[id]).whereType<CampusNode>().toList();
   }
 
   double getEdgeDistance(String fromId, String toId) {
     for (final edge in edges) {
       if ((edge.fromId == fromId && edge.toId == toId) ||
-          (edge.fromId == toId && edge.toId == fromId)) {
+          (edge.fromId == toId && edge.toId == fromId))
         return edge.distanceMeters;
-      }
     }
     return double.infinity;
   }
@@ -90,33 +67,27 @@ class CampusGraph {
     String? nearestId;
     double nearestDist = double.infinity;
     for (final entry in nodes.entries) {
-      final d = _haversineDistanceMeters(
-        position.latitude, position.longitude,
-        entry.value.position.latitude, entry.value.position.longitude,
-      );
-      if (d < nearestDist) {
-        nearestDist = d;
-        nearestId = entry.key;
-      }
+      final d = _haversineDistanceMeters(position.latitude, position.longitude,
+          entry.value.position.latitude, entry.value.position.longitude);
+      if (d < nearestDist) { nearestDist = d; nearestId = entry.key; }
     }
     return nearestId!;
   }
 
-  List<LatLng> getRouteCoordinates(List<String> nodeIds) {
-    return nodeIds.map((id) => nodes[id]?.position).whereType<LatLng>().toList();
-  }
+  List<LatLng> getRouteCoordinates(List<String> nodeIds) =>
+      nodeIds.map((id) => nodes[id]?.position).whereType<LatLng>().toList();
 
   List<String> getRouteInstructions(List<String> nodeIds) {
     final instructions = <String>[];
     for (int i = 0; i < nodeIds.length - 1; i++) {
       final instr = getEdgeInstruction(nodeIds[i], nodeIds[i + 1]);
-      if (instr != null) instructions.add(instr);
+      if (instr != null && (instr.contains('left') || instr.contains('right')))
+        instructions.add(instr);
     }
     return instructions;
   }
 
-  static double _haversineDistanceMeters(
-      double lat1, double lon1, double lat2, double lon2) {
+  static double _haversineDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
     const R = 6371000.0;
     final phi1 = lat1 * math.pi / 180;
     final phi2 = lat2 * math.pi / 180;
@@ -130,2215 +101,1204 @@ class CampusGraph {
 
 final campusGraph = CampusGraph(
   nodes: {
-    'node_000': CampusNode(
-      id: 'node_000',
-      position: LatLng(7.32686333, 3.87899000),
-      label: 'Route start',
-      connectedNodeIds: ['node_001'],
-    ),
-    'node_001': CampusNode(
-      id: 'node_001',
-      position: LatLng(7.32667167, 3.87911167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_000', 'node_002', 'node_114'],
-    ),
-    'node_002': CampusNode(
-      id: 'node_002',
-      position: LatLng(7.32660167, 3.87927167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_001', 'node_003', 'node_113'],
-    ),
-    'node_003': CampusNode(
-      id: 'node_003',
-      position: LatLng(7.32661833, 3.87945667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_002', 'node_004', 'node_112'],
-    ),
-    'node_004': CampusNode(
-      id: 'node_004',
-      position: LatLng(7.32666500, 3.87965500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_003', 'node_005'],
-    ),
-    'node_005': CampusNode(
-      id: 'node_005',
-      position: LatLng(7.32672833, 3.87983667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_004', 'node_006'],
-    ),
-    'node_006': CampusNode(
-      id: 'node_006',
-      position: LatLng(7.32682333, 3.88001333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_005', 'node_007'],
-    ),
-    'node_007': CampusNode(
-      id: 'node_007',
-      position: LatLng(7.32690000, 3.88019000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_006', 'node_008'],
-    ),
-    'node_008': CampusNode(
-      id: 'node_008',
-      position: LatLng(7.32699333, 3.88035667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_007', 'node_009', 'node_108'],
-    ),
-    'node_009': CampusNode(
-      id: 'node_009',
-      position: LatLng(7.32707000, 3.88053500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_008', 'node_010', 'node_107'],
-    ),
-    'node_010': CampusNode(
-      id: 'node_010',
-      position: LatLng(7.32706167, 3.88073167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_009', 'node_011'],
-    ),
-    'node_011': CampusNode(
-      id: 'node_011',
-      position: LatLng(7.32698500, 3.88092500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_010', 'node_012'],
-    ),
-    'node_012': CampusNode(
-      id: 'node_012',
-      position: LatLng(7.32688000, 3.88109833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_011', 'node_013'],
-    ),
-    'node_013': CampusNode(
-      id: 'node_013',
-      position: LatLng(7.32670833, 3.88119333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_012', 'node_014'],
-    ),
-    'node_014': CampusNode(
-      id: 'node_014',
-      position: LatLng(7.32652833, 3.88127167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_013', 'node_015'],
-    ),
-    'node_015': CampusNode(
-      id: 'node_015',
-      position: LatLng(7.32633500, 3.88136333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_014', 'node_016'],
-    ),
-    'node_016': CampusNode(
-      id: 'node_016',
-      position: LatLng(7.32615667, 3.88145167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_015', 'node_017'],
-    ),
-    'node_017': CampusNode(
-      id: 'node_017',
-      position: LatLng(7.32598333, 3.88153000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_016', 'node_018'],
-    ),
-    'node_018': CampusNode(
-      id: 'node_018',
-      position: LatLng(7.32582500, 3.88156667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_017', 'node_019', 'node_023'],
-    ),
-    'node_019': CampusNode(
-      id: 'node_019',
-      position: LatLng(7.32573000, 3.88138167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_018', 'node_020', 'node_022'],
-    ),
-    'node_020': CampusNode(
-      id: 'node_020',
-      position: LatLng(7.32566333, 3.88118667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_019', 'node_021'],
-    ),
-    'node_021': CampusNode(
-      id: 'node_021',
-      position: LatLng(7.32563167, 3.88121500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_020', 'node_022'],
-    ),
-    'node_022': CampusNode(
-      id: 'node_022',
-      position: LatLng(7.32571667, 3.88141667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_019', 'node_021', 'node_023'],
-    ),
-    'node_023': CampusNode(
-      id: 'node_023',
-      position: LatLng(7.32581500, 3.88158333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_018', 'node_022', 'node_024'],
-    ),
-    'node_024': CampusNode(
-      id: 'node_024',
-      position: LatLng(7.32573000, 3.88171167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_023', 'node_025', 'node_061'],
-    ),
-    'node_025': CampusNode(
-      id: 'node_025',
-      position: LatLng(7.32554833, 3.88181167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_024', 'node_026', 'node_060'],
-    ),
-    'node_026': CampusNode(
-      id: 'node_026',
-      position: LatLng(7.32537333, 3.88190500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_025', 'node_027', 'node_059'],
-    ),
-    'node_027': CampusNode(
-      id: 'node_027',
-      position: LatLng(7.32518500, 3.88198667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_026', 'node_028', 'node_058'],
-    ),
-    'node_028': CampusNode(
-      id: 'node_028',
-      position: LatLng(7.32500500, 3.88208000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_027', 'node_029', 'node_057'],
-    ),
-    'node_029': CampusNode(
-      id: 'node_029',
-      position: LatLng(7.32481833, 3.88215500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_028', 'node_030', 'node_056'],
-    ),
-    'node_030': CampusNode(
-      id: 'node_030',
-      position: LatLng(7.32462667, 3.88222667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_029', 'node_031', 'node_055'],
-    ),
-    'node_031': CampusNode(
-      id: 'node_031',
-      position: LatLng(7.32444333, 3.88230000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_030', 'node_032', 'node_054'],
-    ),
-    'node_032': CampusNode(
-      id: 'node_032',
-      position: LatLng(7.32425833, 3.88238500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_031', 'node_033', 'node_053'],
-    ),
-    'node_033': CampusNode(
-      id: 'node_033',
-      position: LatLng(7.32409000, 3.88238333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_032', 'node_034', 'node_051', 'node_052'],
-    ),
-    'node_034': CampusNode(
-      id: 'node_034',
-      position: LatLng(7.32396000, 3.88222500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_033', 'node_035'],
-    ),
-    'node_035': CampusNode(
-      id: 'node_035',
-      position: LatLng(7.32386500, 3.88203667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_034', 'node_036'],
-    ),
-    'node_036': CampusNode(
-      id: 'node_036',
-      position: LatLng(7.32374667, 3.88191500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_035', 'node_037', 'node_039', 'node_040', 'node_050'],
-    ),
-    'node_037': CampusNode(
-      id: 'node_037',
-      position: LatLng(7.32356167, 3.88199000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_036', 'node_038', 'node_049'],
-    ),
-    'node_038': CampusNode(
-      id: 'node_038',
-      position: LatLng(7.32353833, 3.88197500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_037', 'node_039', 'node_049'],
-    ),
-    'node_039': CampusNode(
-      id: 'node_039',
-      position: LatLng(7.32373333, 3.88192167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_036', 'node_038', 'node_040', 'node_050'],
-    ),
-    'node_040': CampusNode(
-      id: 'node_040',
-      position: LatLng(7.32377833, 3.88184833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_036', 'node_039', 'node_041'],
-    ),
-    'node_041': CampusNode(
-      id: 'node_041',
-      position: LatLng(7.32362833, 3.88180333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_040', 'node_042'],
-    ),
-    'node_042': CampusNode(
-      id: 'node_042',
-      position: LatLng(7.32343833, 3.88186333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_041', 'node_043'],
-    ),
-    'node_043': CampusNode(
-      id: 'node_043',
-      position: LatLng(7.32324500, 3.88190500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_042', 'node_044', 'node_047'],
-    ),
-    'node_044': CampusNode(
-      id: 'node_044',
-      position: LatLng(7.32305833, 3.88194833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_043', 'node_045', 'node_046'],
-    ),
-    'node_045': CampusNode(
-      id: 'node_045',
-      position: LatLng(7.32287667, 3.88201667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_044', 'node_046'],
-    ),
-    'node_046': CampusNode(
-      id: 'node_046',
-      position: LatLng(7.32297333, 3.88199333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_044', 'node_045', 'node_047'],
-    ),
-    'node_047': CampusNode(
-      id: 'node_047',
-      position: LatLng(7.32317000, 3.88194667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_043', 'node_046', 'node_048'],
-    ),
-    'node_048': CampusNode(
-      id: 'node_048',
-      position: LatLng(7.32335500, 3.88196000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_047', 'node_049'],
-    ),
-    'node_049': CampusNode(
-      id: 'node_049',
-      position: LatLng(7.32351667, 3.88200667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_037', 'node_038', 'node_048', 'node_050'],
-    ),
-    'node_050': CampusNode(
-      id: 'node_050',
-      position: LatLng(7.32370833, 3.88194500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_036', 'node_039', 'node_049', 'node_051'],
-    ),
-    'node_051': CampusNode(
-      id: 'node_051',
-      position: LatLng(7.32409833, 3.88237333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_033', 'node_050', 'node_052'],
-    ),
-    'node_052': CampusNode(
-      id: 'node_052',
-      position: LatLng(7.32411333, 3.88239500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_033', 'node_051', 'node_053'],
-    ),
-    'node_053': CampusNode(
-      id: 'node_053',
-      position: LatLng(7.32431000, 3.88236333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_032', 'node_052', 'node_054'],
-    ),
-    'node_054': CampusNode(
-      id: 'node_054',
-      position: LatLng(7.32449333, 3.88228167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_031', 'node_053', 'node_055'],
-    ),
-    'node_055': CampusNode(
-      id: 'node_055',
-      position: LatLng(7.32467667, 3.88220000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_030', 'node_054', 'node_056'],
-    ),
-    'node_056': CampusNode(
-      id: 'node_056',
-      position: LatLng(7.32487333, 3.88213167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_029', 'node_055', 'node_057'],
-    ),
-    'node_057': CampusNode(
-      id: 'node_057',
-      position: LatLng(7.32504667, 3.88206000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_028', 'node_056', 'node_058'],
-    ),
-    'node_058': CampusNode(
-      id: 'node_058',
-      position: LatLng(7.32523500, 3.88198833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_027', 'node_057', 'node_059'],
-    ),
-    'node_059': CampusNode(
-      id: 'node_059',
-      position: LatLng(7.32541833, 3.88191333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_026', 'node_058', 'node_060'],
-    ),
-    'node_060': CampusNode(
-      id: 'node_060',
-      position: LatLng(7.32559500, 3.88182167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_025', 'node_059', 'node_061'],
-    ),
-    'node_061': CampusNode(
-      id: 'node_061',
-      position: LatLng(7.32577000, 3.88173667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_024', 'node_060', 'node_062'],
-    ),
-    'node_062': CampusNode(
-      id: 'node_062',
-      position: LatLng(7.32595000, 3.88165500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_061', 'node_063'],
-    ),
-    'node_063': CampusNode(
-      id: 'node_063',
-      position: LatLng(7.32613167, 3.88157333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_062', 'node_064'],
-    ),
-    'node_064': CampusNode(
-      id: 'node_064',
-      position: LatLng(7.32631000, 3.88149000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_063', 'node_065'],
-    ),
-    'node_065': CampusNode(
-      id: 'node_065',
-      position: LatLng(7.32649500, 3.88141500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_064', 'node_066'],
-    ),
-    'node_066': CampusNode(
-      id: 'node_066',
-      position: LatLng(7.32666667, 3.88133167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_065', 'node_067'],
-    ),
-    'node_067': CampusNode(
-      id: 'node_067',
-      position: LatLng(7.32685333, 3.88123667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_066', 'node_068'],
-    ),
-    'node_068': CampusNode(
-      id: 'node_068',
-      position: LatLng(7.32702667, 3.88114167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_067', 'node_069'],
-    ),
-    'node_069': CampusNode(
-      id: 'node_069',
-      position: LatLng(7.32719167, 3.88102333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_068', 'node_070'],
-    ),
-    'node_070': CampusNode(
-      id: 'node_070',
-      position: LatLng(7.32733167, 3.88089167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_069', 'node_071', 'node_105'],
-    ),
-    'node_071': CampusNode(
-      id: 'node_071',
-      position: LatLng(7.32750167, 3.88078000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_070', 'node_072'],
-    ),
-    'node_072': CampusNode(
-      id: 'node_072',
-      position: LatLng(7.32764833, 3.88065833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_071', 'node_073'],
-    ),
-    'node_073': CampusNode(
-      id: 'node_073',
-      position: LatLng(7.32781333, 3.88055000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_072', 'node_074'],
-    ),
-    'node_074': CampusNode(
-      id: 'node_074',
-      position: LatLng(7.32798500, 3.88045833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_073', 'node_075'],
-    ),
-    'node_075': CampusNode(
-      id: 'node_075',
-      position: LatLng(7.32818333, 3.88038000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_074', 'node_076'],
-    ),
-    'node_076': CampusNode(
-      id: 'node_076',
-      position: LatLng(7.32810333, 3.88041667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_075', 'node_077'],
-    ),
-    'node_077': CampusNode(
-      id: 'node_077',
-      position: LatLng(7.32824167, 3.88060167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_076', 'node_078'],
-    ),
-    'node_078': CampusNode(
-      id: 'node_078',
-      position: LatLng(7.32837500, 3.88075500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_077', 'node_079', 'node_093'],
-    ),
-    'node_079': CampusNode(
-      id: 'node_079',
-      position: LatLng(7.32834167, 3.88094000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_078', 'node_080'],
-    ),
-    'node_080': CampusNode(
-      id: 'node_080',
-      position: LatLng(7.32841500, 3.88114000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_079', 'node_081'],
-    ),
-    'node_081': CampusNode(
-      id: 'node_081',
-      position: LatLng(7.32845500, 3.88133333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_080', 'node_082'],
-    ),
-    'node_082': CampusNode(
-      id: 'node_082',
-      position: LatLng(7.32862667, 3.88132833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_081', 'node_083', 'node_084'],
-    ),
-    'node_083': CampusNode(
-      id: 'node_083',
-      position: LatLng(7.32879500, 3.88132500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_082', 'node_084'],
-    ),
-    'node_084': CampusNode(
-      id: 'node_084',
-      position: LatLng(7.32867500, 3.88132667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_082', 'node_083', 'node_085'],
-    ),
-    'node_085': CampusNode(
-      id: 'node_085',
-      position: LatLng(7.32855833, 3.88145333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_084', 'node_086'],
-    ),
-    'node_086': CampusNode(
-      id: 'node_086',
-      position: LatLng(7.32856333, 3.88163667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_085', 'node_087'],
-    ),
-    'node_087': CampusNode(
-      id: 'node_087',
-      position: LatLng(7.32837167, 3.88174667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_086', 'node_088'],
-    ),
-    'node_088': CampusNode(
-      id: 'node_088',
-      position: LatLng(7.32822500, 3.88160833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_087', 'node_089'],
-    ),
-    'node_089': CampusNode(
-      id: 'node_089',
-      position: LatLng(7.32813333, 3.88142667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_088', 'node_090'],
-    ),
-    'node_090': CampusNode(
-      id: 'node_090',
-      position: LatLng(7.32803500, 3.88125167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_089', 'node_091'],
-    ),
-    'node_091': CampusNode(
-      id: 'node_091',
-      position: LatLng(7.32801333, 3.88108000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_090', 'node_092', 'node_094', 'node_095', 'node_096'],
-    ),
-    'node_092': CampusNode(
-      id: 'node_092',
-      position: LatLng(7.32814833, 3.88094167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_091', 'node_093', 'node_095'],
-    ),
-    'node_093': CampusNode(
-      id: 'node_093',
-      position: LatLng(7.32831667, 3.88083167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_078', 'node_092', 'node_094'],
-    ),
-    'node_094': CampusNode(
-      id: 'node_094',
-      position: LatLng(7.32795500, 3.88116000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_091', 'node_093', 'node_095', 'node_097'],
-    ),
-    'node_095': CampusNode(
-      id: 'node_095',
-      position: LatLng(7.32806667, 3.88100833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_091', 'node_092', 'node_094', 'node_096'],
-    ),
-    'node_096': CampusNode(
-      id: 'node_096',
-      position: LatLng(7.32803333, 3.88102167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_091', 'node_095', 'node_097'],
-    ),
-    'node_097': CampusNode(
-      id: 'node_097',
-      position: LatLng(7.32793833, 3.88118833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_094', 'node_096', 'node_098'],
-    ),
-    'node_098': CampusNode(
-      id: 'node_098',
-      position: LatLng(7.32793833, 3.88140333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_097', 'node_099'],
-    ),
-    'node_099': CampusNode(
-      id: 'node_099',
-      position: LatLng(7.32796000, 3.88160500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_098', 'node_100'],
-    ),
-    'node_100': CampusNode(
-      id: 'node_100',
-      position: LatLng(7.32783333, 3.88173500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_099', 'node_101'],
-    ),
-    'node_101': CampusNode(
-      id: 'node_101',
-      position: LatLng(7.32771667, 3.88156667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_100', 'node_102'],
-    ),
-    'node_102': CampusNode(
-      id: 'node_102',
-      position: LatLng(7.32760333, 3.88138333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_101', 'node_103'],
-    ),
-    'node_103': CampusNode(
-      id: 'node_103',
-      position: LatLng(7.32749167, 3.88122333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_102', 'node_104'],
-    ),
-    'node_104': CampusNode(
-      id: 'node_104',
-      position: LatLng(7.32737667, 3.88103667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_103', 'node_105'],
-    ),
-    'node_105': CampusNode(
-      id: 'node_105',
-      position: LatLng(7.32728167, 3.88085833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_070', 'node_104', 'node_106'],
-    ),
-    'node_106': CampusNode(
-      id: 'node_106',
-      position: LatLng(7.32721000, 3.88065833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_105', 'node_107'],
-    ),
-    'node_107': CampusNode(
-      id: 'node_107',
-      position: LatLng(7.32710833, 3.88047500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_009', 'node_106', 'node_108'],
-    ),
-    'node_108': CampusNode(
-      id: 'node_108',
-      position: LatLng(7.32702667, 3.88028167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_008', 'node_107', 'node_109'],
-    ),
-    'node_109': CampusNode(
-      id: 'node_109',
-      position: LatLng(7.32694333, 3.88008167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_108', 'node_110'],
-    ),
-    'node_110': CampusNode(
-      id: 'node_110',
-      position: LatLng(7.32686167, 3.87988500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_109', 'node_111'],
-    ),
-    'node_111': CampusNode(
-      id: 'node_111',
-      position: LatLng(7.32680667, 3.87969167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_110', 'node_112'],
-    ),
-    'node_112': CampusNode(
-      id: 'node_112',
-      position: LatLng(7.32669333, 3.87950667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_003', 'node_111', 'node_113'],
-    ),
-    'node_113': CampusNode(
-      id: 'node_113',
-      position: LatLng(7.32665500, 3.87930500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_002', 'node_112', 'node_114'],
-    ),
-    'node_114': CampusNode(
-      id: 'node_114',
-      position: LatLng(7.32660833, 3.87910167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_001', 'node_113', 'node_115'],
-    ),
-    'node_115': CampusNode(
-      id: 'node_115',
-      position: LatLng(7.32657833, 3.87890167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_114', 'node_116'],
-    ),
-    'node_116': CampusNode(
-      id: 'node_116',
-      position: LatLng(7.32656167, 3.87868500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_115', 'node_117'],
-    ),
-    'node_117': CampusNode(
-      id: 'node_117',
-      position: LatLng(7.32652000, 3.87848500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_116', 'node_118'],
-    ),
-    'node_118': CampusNode(
-      id: 'node_118',
-      position: LatLng(7.32651333, 3.87827167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_117', 'node_119'],
-    ),
-    'node_119': CampusNode(
-      id: 'node_119',
-      position: LatLng(7.32649000, 3.87806667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_118', 'node_120', 'node_127'],
-    ),
-    'node_120': CampusNode(
-      id: 'node_120',
-      position: LatLng(7.32631667, 3.87802667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_119', 'node_121', 'node_126'],
-    ),
-    'node_121': CampusNode(
-      id: 'node_121',
-      position: LatLng(7.32611333, 3.87800500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_120', 'node_122'],
-    ),
-    'node_122': CampusNode(
-      id: 'node_122',
-      position: LatLng(7.32593000, 3.87793000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_121', 'node_123'],
-    ),
-    'node_123': CampusNode(
-      id: 'node_123',
-      position: LatLng(7.32573500, 3.87798000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_122', 'node_124'],
-    ),
-    'node_124': CampusNode(
-      id: 'node_124',
-      position: LatLng(7.32554167, 3.87793667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_123', 'node_125'],
-    ),
-    'node_125': CampusNode(
-      id: 'node_125',
-      position: LatLng(7.32534167, 3.87791833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_124', 'node_126'],
-    ),
-    'node_126': CampusNode(
-      id: 'node_126',
-      position: LatLng(7.32623167, 3.87800500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_120', 'node_125', 'node_127'],
-    ),
-    'node_127': CampusNode(
-      id: 'node_127',
-      position: LatLng(7.32643000, 3.87798167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_119', 'node_126', 'node_128'],
-    ),
-    'node_128': CampusNode(
-      id: 'node_128',
-      position: LatLng(7.32663167, 3.87792500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_127', 'node_129'],
-    ),
-    'node_129': CampusNode(
-      id: 'node_129',
-      position: LatLng(7.32681333, 3.87783000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_128', 'node_130'],
-    ),
-    'node_130': CampusNode(
-      id: 'node_130',
-      position: LatLng(7.32698833, 3.87772500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_129', 'node_131'],
-    ),
-    'node_131': CampusNode(
-      id: 'node_131',
-      position: LatLng(7.32717333, 3.87764500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_130', 'node_132'],
-    ),
-    'node_132': CampusNode(
-      id: 'node_132',
-      position: LatLng(7.32735333, 3.87759167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_131', 'node_133', 'node_160'],
-    ),
-    'node_133': CampusNode(
-      id: 'node_133',
-      position: LatLng(7.32742667, 3.87742667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_132', 'node_134'],
-    ),
-    'node_134': CampusNode(
-      id: 'node_134',
-      position: LatLng(7.32762833, 3.87738667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_133', 'node_135'],
-    ),
-    'node_135': CampusNode(
-      id: 'node_135',
-      position: LatLng(7.32782500, 3.87734333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_134', 'node_136'],
-    ),
-    'node_136': CampusNode(
-      id: 'node_136',
-      position: LatLng(7.32801833, 3.87728667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_135', 'node_137'],
-    ),
-    'node_137': CampusNode(
-      id: 'node_137',
-      position: LatLng(7.32821167, 3.87724500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_136', 'node_138', 'node_141', 'node_142'],
-    ),
-    'node_138': CampusNode(
-      id: 'node_138',
-      position: LatLng(7.32837833, 3.87714833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_137', 'node_139'],
-    ),
-    'node_139': CampusNode(
-      id: 'node_139',
-      position: LatLng(7.32836667, 3.87772000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_138', 'node_140'],
-    ),
-    'node_140': CampusNode(
-      id: 'node_140',
-      position: LatLng(7.32830000, 3.87753500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_139', 'node_141'],
-    ),
-    'node_141': CampusNode(
-      id: 'node_141',
-      position: LatLng(7.32821000, 3.87735167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_137', 'node_140', 'node_142'],
-    ),
-    'node_142': CampusNode(
-      id: 'node_142',
-      position: LatLng(7.32817333, 3.87715333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_137', 'node_141', 'node_143'],
-    ),
-    'node_143': CampusNode(
-      id: 'node_143',
-      position: LatLng(7.32808500, 3.87698667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_142', 'node_144'],
-    ),
-    'node_144': CampusNode(
-      id: 'node_144',
-      position: LatLng(7.32802333, 3.87696000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_143', 'node_145'],
-    ),
-    'node_145': CampusNode(
-      id: 'node_145',
-      position: LatLng(7.32782333, 3.87699500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_144', 'node_146'],
-    ),
-    'node_146': CampusNode(
-      id: 'node_146',
-      position: LatLng(7.32761667, 3.87702000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_145', 'node_147'],
-    ),
-    'node_147': CampusNode(
-      id: 'node_147',
-      position: LatLng(7.32748333, 3.87694000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_146', 'node_148'],
-    ),
-    'node_148': CampusNode(
-      id: 'node_148',
-      position: LatLng(7.32744500, 3.87672833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_147', 'node_149', 'node_155'],
-    ),
-    'node_149': CampusNode(
-      id: 'node_149',
-      position: LatLng(7.32729000, 3.87660000),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_148', 'node_150'],
-    ),
-    'node_150': CampusNode(
-      id: 'node_150',
-      position: LatLng(7.32709833, 3.87655167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_149', 'node_151'],
-    ),
-    'node_151': CampusNode(
-      id: 'node_151',
-      position: LatLng(7.32690833, 3.87652500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_150', 'node_152'],
-    ),
-    'node_152': CampusNode(
-      id: 'node_152',
-      position: LatLng(7.32683333, 3.87663833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_151', 'node_153'],
-    ),
-    'node_153': CampusNode(
-      id: 'node_153',
-      position: LatLng(7.32700500, 3.87667667),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_152', 'node_154'],
-    ),
-    'node_154': CampusNode(
-      id: 'node_154',
-      position: LatLng(7.32720000, 3.87671167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_153', 'node_155'],
-    ),
-    'node_155': CampusNode(
-      id: 'node_155',
-      position: LatLng(7.32738333, 3.87676500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_148', 'node_154', 'node_156'],
-    ),
-    'node_156': CampusNode(
-      id: 'node_156',
-      position: LatLng(7.32737667, 3.87692167),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_155', 'node_157'],
-    ),
-    'node_157': CampusNode(
-      id: 'node_157',
-      position: LatLng(7.32725667, 3.87705833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_156', 'node_158'],
-    ),
-    'node_158': CampusNode(
-      id: 'node_158',
-      position: LatLng(7.32726833, 3.87725833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_157', 'node_159'],
-    ),
-    'node_159': CampusNode(
-      id: 'node_159',
-      position: LatLng(7.32730333, 3.87744833),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_158', 'node_160'],
-    ),
-    'node_160': CampusNode(
-      id: 'node_160',
-      position: LatLng(7.32733667, 3.87765333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_132', 'node_159', 'node_161'],
-    ),
-    'node_161': CampusNode(
-      id: 'node_161',
-      position: LatLng(7.32741667, 3.87784333),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_160', 'node_162'],
-    ),
-    'node_162': CampusNode(
-      id: 'node_162',
-      position: LatLng(7.32747500, 3.87802500),
-      label: null,  // TODO: add landmark name if applicable
-      connectedNodeIds: ['node_161', 'node_163'],
-    ),
-    'node_163': CampusNode(
-      id: 'node_163',
-      position: LatLng(7.32753167, 3.87821000),
-      label: 'Route end',
-      connectedNodeIds: ['node_162'],
-    ),
+    'node_000': CampusNode(id: 'node_000', position: LatLng(7.32686333, 3.87899000), label: 'Campus path start', connectedNodeIds: ['node_001']),
+    'node_001': CampusNode(id: 'node_001', position: LatLng(7.32667167, 3.87911167), label: null, connectedNodeIds: ['node_000', 'node_002', 'node_133', 'node_390', 'node_391']),
+    'node_002': CampusNode(id: 'node_002', position: LatLng(7.32660000, 3.87917500), label: null, connectedNodeIds: ['node_001', 'node_003', 'node_133', 'node_221', 'node_391']),
+    'node_003': CampusNode(id: 'node_003', position: LatLng(7.32658833, 3.87936833), label: null, connectedNodeIds: ['node_002', 'node_004', 'node_132', 'node_222', 'node_392']),
+    'node_004': CampusNode(id: 'node_004', position: LatLng(7.32664000, 3.87956000), label: null, connectedNodeIds: ['node_003', 'node_005', 'node_131', 'node_223', 'node_393', 'node_394']),
+    'node_005': CampusNode(id: 'node_005', position: LatLng(7.32666500, 3.87965500), label: null, connectedNodeIds: ['node_004', 'node_006', 'node_224', 'node_393', 'node_394']),
+    'node_006': CampusNode(id: 'node_006', position: LatLng(7.32671000, 3.87974500), label: null, connectedNodeIds: ['node_005', 'node_007', 'node_224']),
+    'node_007': CampusNode(id: 'node_007', position: LatLng(7.32678333, 3.87992500), label: null, connectedNodeIds: ['node_006', 'node_008', 'node_129', 'node_225']),
+    'node_008': CampusNode(id: 'node_008', position: LatLng(7.32682333, 3.88001333), label: null, connectedNodeIds: ['node_007', 'node_009', 'node_226']),
+    'node_009': CampusNode(id: 'node_009', position: LatLng(7.32690000, 3.88019000), label: null, connectedNodeIds: ['node_008', 'node_010', 'node_227']),
+    'node_010': CampusNode(id: 'node_010', position: LatLng(7.32699333, 3.88035667), label: null, connectedNodeIds: ['node_009', 'node_011', 'node_127', 'node_228']),
+    'node_011': CampusNode(id: 'node_011', position: LatLng(7.32707000, 3.88053500), label: null, connectedNodeIds: ['node_010', 'node_012', 'node_126', 'node_229']),
+    'node_012': CampusNode(id: 'node_012', position: LatLng(7.32710667, 3.88063833), label: null, connectedNodeIds: ['node_011', 'node_013', 'node_125', 'node_230']),
+    'node_013': CampusNode(id: 'node_013', position: LatLng(7.32700833, 3.88082333), label: null, connectedNodeIds: ['node_012', 'node_014']),
+    'node_014': CampusNode(id: 'node_014', position: LatLng(7.32694667, 3.88101833), label: null, connectedNodeIds: ['node_013', 'node_015', 'node_403']),
+    'node_015': CampusNode(id: 'node_015', position: LatLng(7.32685000, 3.88113333), label: null, connectedNodeIds: ['node_014', 'node_016', 'node_404']),
+    'node_016': CampusNode(id: 'node_016', position: LatLng(7.32665667, 3.88121000), label: null, connectedNodeIds: ['node_015', 'node_017']),
+    'node_017': CampusNode(id: 'node_017', position: LatLng(7.32648667, 3.88130000), label: null, connectedNodeIds: ['node_016', 'node_018']),
+    'node_018': CampusNode(id: 'node_018', position: LatLng(7.32629000, 3.88138667), label: null, connectedNodeIds: ['node_017', 'node_019', 'node_074']),
+    'node_019': CampusNode(id: 'node_019', position: LatLng(7.32611333, 3.88147000), label: null, connectedNodeIds: ['node_018', 'node_020', 'node_073']),
+    'node_020': CampusNode(id: 'node_020', position: LatLng(7.32593833, 3.88156167), label: null, connectedNodeIds: ['node_019', 'node_021', 'node_072']),
+    'node_021': CampusNode(id: 'node_021', position: LatLng(7.32585667, 3.88161000), label: null, connectedNodeIds: ['node_020', 'node_022', 'node_027', 'node_028', 'node_072']),
+    'node_022': CampusNode(id: 'node_022', position: LatLng(7.32577000, 3.88147500), label: null, connectedNodeIds: ['node_021', 'node_023', 'node_026']),
+    'node_023': CampusNode(id: 'node_023', position: LatLng(7.32570167, 3.88128333), label: null, connectedNodeIds: ['node_022', 'node_024', 'node_025']),
+    'node_024': CampusNode(id: 'node_024', position: LatLng(7.32563833, 3.88114000), label: null, connectedNodeIds: ['node_023', 'node_025']),
+    'node_025': CampusNode(id: 'node_025', position: LatLng(7.32563167, 3.88121500), label: null, connectedNodeIds: ['node_023', 'node_024', 'node_026']),
+    'node_026': CampusNode(id: 'node_026', position: LatLng(7.32571667, 3.88141667), label: null, connectedNodeIds: ['node_022', 'node_025', 'node_027']),
+    'node_027': CampusNode(id: 'node_027', position: LatLng(7.32581500, 3.88158333), label: null, connectedNodeIds: ['node_021', 'node_026', 'node_028']),
+    'node_028': CampusNode(id: 'node_028', position: LatLng(7.32582500, 3.88167833), label: null, connectedNodeIds: ['node_021', 'node_027', 'node_029', 'node_071']),
+    'node_029': CampusNode(id: 'node_029', position: LatLng(7.32564000, 3.88176500), label: null, connectedNodeIds: ['node_028', 'node_030', 'node_070']),
+    'node_030': CampusNode(id: 'node_030', position: LatLng(7.32545833, 3.88184667), label: null, connectedNodeIds: ['node_029', 'node_031', 'node_069']),
+    'node_031': CampusNode(id: 'node_031', position: LatLng(7.32533000, 3.88192667), label: null, connectedNodeIds: ['node_030', 'node_032', 'node_069']),
+    'node_032': CampusNode(id: 'node_032', position: LatLng(7.32514000, 3.88200667), label: null, connectedNodeIds: ['node_031', 'node_033', 'node_067', 'node_068']),
+    'node_033': CampusNode(id: 'node_033', position: LatLng(7.32500500, 3.88208000), label: null, connectedNodeIds: ['node_032', 'node_034', 'node_066', 'node_067']),
+    'node_034': CampusNode(id: 'node_034', position: LatLng(7.32481833, 3.88215500), label: null, connectedNodeIds: ['node_033', 'node_035', 'node_065', 'node_264']),
+    'node_035': CampusNode(id: 'node_035', position: LatLng(7.32462667, 3.88222667), label: null, connectedNodeIds: ['node_034', 'node_036', 'node_064', 'node_265']),
+    'node_036': CampusNode(id: 'node_036', position: LatLng(7.32444333, 3.88230000), label: null, connectedNodeIds: ['node_035', 'node_037', 'node_063', 'node_266', 'node_267']),
+    'node_037': CampusNode(id: 'node_037', position: LatLng(7.32425833, 3.88238500), label: null, connectedNodeIds: ['node_036', 'node_038', 'node_062', 'node_268', 'node_433']),
+    'node_038': CampusNode(id: 'node_038', position: LatLng(7.32411667, 3.88242333), label: null, connectedNodeIds: ['node_037', 'node_039', 'node_061', 'node_268', 'node_269', 'node_325', 'node_326', 'node_432']),
+    'node_039': CampusNode(id: 'node_039', position: LatLng(7.32398167, 3.88226833), label: null, connectedNodeIds: ['node_038', 'node_040', 'node_270']),
+    'node_040': CampusNode(id: 'node_040', position: LatLng(7.32388167, 3.88208667), label: null, connectedNodeIds: ['node_039', 'node_041', 'node_271', 'node_272', 'node_323']),
+    'node_041': CampusNode(id: 'node_041', position: LatLng(7.32379667, 3.88191667), label: null, connectedNodeIds: ['node_040', 'node_042', 'node_045', 'node_060', 'node_273']),
+    'node_042': CampusNode(id: 'node_042', position: LatLng(7.32365000, 3.88194500), label: null, connectedNodeIds: ['node_041', 'node_043', 'node_044', 'node_059', 'node_060']),
+    'node_043': CampusNode(id: 'node_043', position: LatLng(7.32350333, 3.88200500), label: null, connectedNodeIds: ['node_042', 'node_044', 'node_057', 'node_058', 'node_426', 'node_427']),
+    'node_044': CampusNode(id: 'node_044', position: LatLng(7.32363500, 3.88196333), label: null, connectedNodeIds: ['node_042', 'node_043', 'node_045', 'node_059', 'node_060']),
+    'node_045': CampusNode(id: 'node_045', position: LatLng(7.32377833, 3.88190500), label: null, connectedNodeIds: ['node_041', 'node_044', 'node_046', 'node_060', 'node_273', 'node_322']),
+    'node_046': CampusNode(id: 'node_046', position: LatLng(7.32376167, 3.88180167), label: null, connectedNodeIds: ['node_045', 'node_047', 'node_274', 'node_322']),
+    'node_047': CampusNode(id: 'node_047', position: LatLng(7.32357167, 3.88181167), label: null, connectedNodeIds: ['node_046', 'node_048', 'node_305']),
+    'node_048': CampusNode(id: 'node_048', position: LatLng(7.32348667, 3.88185500), label: null, connectedNodeIds: ['node_047', 'node_049', 'node_304']),
+    'node_049': CampusNode(id: 'node_049', position: LatLng(7.32329000, 3.88189000), label: null, connectedNodeIds: ['node_048', 'node_050', 'node_056']),
+    'node_050': CampusNode(id: 'node_050', position: LatLng(7.32311000, 3.88194000), label: null, connectedNodeIds: ['node_049', 'node_051', 'node_054', 'node_055']),
+    'node_051': CampusNode(id: 'node_051', position: LatLng(7.32301000, 3.88198167), label: null, connectedNodeIds: ['node_050', 'node_052', 'node_053', 'node_054']),
+    'node_052': CampusNode(id: 'node_052', position: LatLng(7.32287667, 3.88201667), label: null, connectedNodeIds: ['node_051', 'node_053', 'node_320', 'node_321']),
+    'node_053': CampusNode(id: 'node_053', position: LatLng(7.32297333, 3.88199333), label: null, connectedNodeIds: ['node_051', 'node_052', 'node_054']),
+    'node_054': CampusNode(id: 'node_054', position: LatLng(7.32306333, 3.88195000), label: null, connectedNodeIds: ['node_050', 'node_051', 'node_053', 'node_055']),
+    'node_055': CampusNode(id: 'node_055', position: LatLng(7.32317000, 3.88194667), label: null, connectedNodeIds: ['node_050', 'node_054', 'node_056']),
+    'node_056': CampusNode(id: 'node_056', position: LatLng(7.32326500, 3.88190333), label: null, connectedNodeIds: ['node_049', 'node_055', 'node_057']),
+    'node_057': CampusNode(id: 'node_057', position: LatLng(7.32342833, 3.88202833), label: null, connectedNodeIds: ['node_043', 'node_056', 'node_058', 'node_426', 'node_427']),
+    'node_058': CampusNode(id: 'node_058', position: LatLng(7.32351667, 3.88200667), label: null, connectedNodeIds: ['node_043', 'node_057', 'node_059', 'node_426', 'node_427']),
+    'node_059': CampusNode(id: 'node_059', position: LatLng(7.32361667, 3.88198333), label: null, connectedNodeIds: ['node_042', 'node_044', 'node_058', 'node_060', 'node_427']),
+    'node_060': CampusNode(id: 'node_060', position: LatLng(7.32370833, 3.88194500), label: null, connectedNodeIds: ['node_041', 'node_042', 'node_044', 'node_045', 'node_059', 'node_061']),
+    'node_061': CampusNode(id: 'node_061', position: LatLng(7.32409833, 3.88237333), label: null, connectedNodeIds: ['node_038', 'node_060', 'node_062', 'node_269', 'node_325', 'node_326']),
+    'node_062': CampusNode(id: 'node_062', position: LatLng(7.32431000, 3.88236333), label: null, connectedNodeIds: ['node_037', 'node_061', 'node_063', 'node_267', 'node_268', 'node_433']),
+    'node_063': CampusNode(id: 'node_063', position: LatLng(7.32449333, 3.88228167), label: null, connectedNodeIds: ['node_036', 'node_062', 'node_064', 'node_266', 'node_267']),
+    'node_064': CampusNode(id: 'node_064', position: LatLng(7.32458000, 3.88223500), label: null, connectedNodeIds: ['node_035', 'node_063', 'node_065', 'node_265', 'node_266']),
+    'node_065': CampusNode(id: 'node_065', position: LatLng(7.32478167, 3.88215833), label: null, connectedNodeIds: ['node_034', 'node_064', 'node_066', 'node_264']),
+    'node_066': CampusNode(id: 'node_066', position: LatLng(7.32497500, 3.88211667), label: null, connectedNodeIds: ['node_033', 'node_065', 'node_067']),
+    'node_067': CampusNode(id: 'node_067', position: LatLng(7.32504667, 3.88206000), label: null, connectedNodeIds: ['node_032', 'node_033', 'node_066', 'node_068']),
+    'node_068': CampusNode(id: 'node_068', position: LatLng(7.32523500, 3.88198833), label: null, connectedNodeIds: ['node_032', 'node_067', 'node_069']),
+    'node_069': CampusNode(id: 'node_069', position: LatLng(7.32541833, 3.88191333), label: null, connectedNodeIds: ['node_030', 'node_031', 'node_068', 'node_070']),
+    'node_070': CampusNode(id: 'node_070', position: LatLng(7.32559500, 3.88182167), label: null, connectedNodeIds: ['node_029', 'node_069', 'node_071']),
+    'node_071': CampusNode(id: 'node_071', position: LatLng(7.32577000, 3.88173667), label: null, connectedNodeIds: ['node_028', 'node_070', 'node_072']),
+    'node_072': CampusNode(id: 'node_072', position: LatLng(7.32595000, 3.88165500), label: null, connectedNodeIds: ['node_020', 'node_021', 'node_071', 'node_073']),
+    'node_073': CampusNode(id: 'node_073', position: LatLng(7.32613167, 3.88157333), label: null, connectedNodeIds: ['node_019', 'node_072', 'node_074']),
+    'node_074': CampusNode(id: 'node_074', position: LatLng(7.32631000, 3.88149000), label: null, connectedNodeIds: ['node_018', 'node_073', 'node_075']),
+    'node_075': CampusNode(id: 'node_075', position: LatLng(7.32645333, 3.88144167), label: null, connectedNodeIds: ['node_074', 'node_076']),
+    'node_076': CampusNode(id: 'node_076', position: LatLng(7.32662500, 3.88135000), label: null, connectedNodeIds: ['node_075', 'node_077']),
+    'node_077': CampusNode(id: 'node_077', position: LatLng(7.32680500, 3.88126500), label: null, connectedNodeIds: ['node_076', 'node_078']),
+    'node_078': CampusNode(id: 'node_078', position: LatLng(7.32698667, 3.88117000), label: null, connectedNodeIds: ['node_077', 'node_079']),
+    'node_079': CampusNode(id: 'node_079', position: LatLng(7.32714833, 3.88105500), label: null, connectedNodeIds: ['node_078', 'node_080']),
+    'node_080': CampusNode(id: 'node_080', position: LatLng(7.32730167, 3.88092667), label: null, connectedNodeIds: ['node_079', 'node_081', 'node_123', 'node_124', 'node_232']),
+    'node_081': CampusNode(id: 'node_081', position: LatLng(7.32746000, 3.88080833), label: null, connectedNodeIds: ['node_080', 'node_082']),
+    'node_082': CampusNode(id: 'node_082', position: LatLng(7.32761167, 3.88068500), label: null, connectedNodeIds: ['node_081', 'node_083']),
+    'node_083': CampusNode(id: 'node_083', position: LatLng(7.32769000, 3.88064000), label: null, connectedNodeIds: ['node_082', 'node_084']),
+    'node_084': CampusNode(id: 'node_084', position: LatLng(7.32784833, 3.88051667), label: null, connectedNodeIds: ['node_083', 'node_085']),
+    'node_085': CampusNode(id: 'node_085', position: LatLng(7.32803667, 3.88044500), label: null, connectedNodeIds: ['node_084', 'node_086', 'node_088']),
+    'node_086': CampusNode(id: 'node_086', position: LatLng(7.32818333, 3.88038000), label: null, connectedNodeIds: ['node_085', 'node_087', 'node_088']),
+    'node_087': CampusNode(id: 'node_087', position: LatLng(7.32829833, 3.88029333), label: null, connectedNodeIds: ['node_086', 'node_088']),
+    'node_088': CampusNode(id: 'node_088', position: LatLng(7.32810333, 3.88041667), label: null, connectedNodeIds: ['node_085', 'node_086', 'node_087', 'node_089']),
+    'node_089': CampusNode(id: 'node_089', position: LatLng(7.32824167, 3.88060167), label: null, connectedNodeIds: ['node_088', 'node_090']),
+    'node_090': CampusNode(id: 'node_090', position: LatLng(7.32837500, 3.88075500), label: null, connectedNodeIds: ['node_089', 'node_091', 'node_109']),
+    'node_091': CampusNode(id: 'node_091', position: LatLng(7.32833333, 3.88089500), label: null, connectedNodeIds: ['node_090', 'node_092', 'node_108']),
+    'node_092': CampusNode(id: 'node_092', position: LatLng(7.32841167, 3.88109000), label: null, connectedNodeIds: ['node_091', 'node_093']),
+    'node_093': CampusNode(id: 'node_093', position: LatLng(7.32843833, 3.88128667), label: null, connectedNodeIds: ['node_092', 'node_094', 'node_254']),
+    'node_094': CampusNode(id: 'node_094', position: LatLng(7.32848333, 3.88137167), label: null, connectedNodeIds: ['node_093', 'node_095', 'node_098', 'node_255']),
+    'node_095': CampusNode(id: 'node_095', position: LatLng(7.32866667, 3.88129833), label: null, connectedNodeIds: ['node_094', 'node_096', 'node_097', 'node_098']),
+    'node_096': CampusNode(id: 'node_096', position: LatLng(7.32877167, 3.88128167), label: null, connectedNodeIds: ['node_095', 'node_097']),
+    'node_097': CampusNode(id: 'node_097', position: LatLng(7.32867500, 3.88132667), label: null, connectedNodeIds: ['node_095', 'node_096', 'node_098']),
+    'node_098': CampusNode(id: 'node_098', position: LatLng(7.32858167, 3.88136333), label: null, connectedNodeIds: ['node_094', 'node_095', 'node_097', 'node_099', 'node_255']),
+    'node_099': CampusNode(id: 'node_099', position: LatLng(7.32860000, 3.88154500), label: null, connectedNodeIds: ['node_098', 'node_100', 'node_253', 'node_256', 'node_257']),
+    'node_100': CampusNode(id: 'node_100', position: LatLng(7.32856333, 3.88163667), label: null, connectedNodeIds: ['node_099', 'node_101', 'node_253', 'node_257']),
+    'node_101': CampusNode(id: 'node_101', position: LatLng(7.32845833, 3.88167333), label: null, connectedNodeIds: ['node_100', 'node_102', 'node_258']),
+    'node_102': CampusNode(id: 'node_102', position: LatLng(7.32837167, 3.88174667), label: null, connectedNodeIds: ['node_101', 'node_103', 'node_258']),
+    'node_103': CampusNode(id: 'node_103', position: LatLng(7.32822500, 3.88160833), label: null, connectedNodeIds: ['node_102', 'node_104']),
+    'node_104': CampusNode(id: 'node_104', position: LatLng(7.32818667, 3.88152000), label: null, connectedNodeIds: ['node_103', 'node_105']),
+    'node_105': CampusNode(id: 'node_105', position: LatLng(7.32808333, 3.88133667), label: null, connectedNodeIds: ['node_104', 'node_106']),
+    'node_106': CampusNode(id: 'node_106', position: LatLng(7.32798667, 3.88116500), label: null, connectedNodeIds: ['node_105', 'node_107', 'node_110', 'node_114']),
+    'node_107': CampusNode(id: 'node_107', position: LatLng(7.32808167, 3.88100667), label: null, connectedNodeIds: ['node_106', 'node_108', 'node_111', 'node_112', 'node_113']),
+    'node_108': CampusNode(id: 'node_108', position: LatLng(7.32824167, 3.88089500), label: null, connectedNodeIds: ['node_091', 'node_107', 'node_109']),
+    'node_109': CampusNode(id: 'node_109', position: LatLng(7.32838333, 3.88076167), label: null, connectedNodeIds: ['node_090', 'node_108', 'node_110']),
+    'node_110': CampusNode(id: 'node_110', position: LatLng(7.32795500, 3.88116000), label: null, connectedNodeIds: ['node_106', 'node_109', 'node_111', 'node_114']),
+    'node_111': CampusNode(id: 'node_111', position: LatLng(7.32803500, 3.88104333), label: null, connectedNodeIds: ['node_107', 'node_110', 'node_112', 'node_113']),
+    'node_112': CampusNode(id: 'node_112', position: LatLng(7.32809500, 3.88097167), label: null, connectedNodeIds: ['node_107', 'node_111', 'node_113']),
+    'node_113': CampusNode(id: 'node_113', position: LatLng(7.32803333, 3.88102167), label: null, connectedNodeIds: ['node_107', 'node_111', 'node_112', 'node_114']),
+    'node_114': CampusNode(id: 'node_114', position: LatLng(7.32795000, 3.88113833), label: null, connectedNodeIds: ['node_106', 'node_110', 'node_113', 'node_115']),
+    'node_115': CampusNode(id: 'node_115', position: LatLng(7.32794333, 3.88135167), label: null, connectedNodeIds: ['node_114', 'node_116']),
+    'node_116': CampusNode(id: 'node_116', position: LatLng(7.32795833, 3.88155167), label: null, connectedNodeIds: ['node_115', 'node_117']),
+    'node_117': CampusNode(id: 'node_117', position: LatLng(7.32795833, 3.88165833), label: null, connectedNodeIds: ['node_116', 'node_118', 'node_262', 'node_263']),
+    'node_118': CampusNode(id: 'node_118', position: LatLng(7.32788167, 3.88173000), label: null, connectedNodeIds: ['node_117', 'node_119', 'node_251', 'node_252', 'node_263']),
+    'node_119': CampusNode(id: 'node_119', position: LatLng(7.32771667, 3.88156667), label: null, connectedNodeIds: ['node_118', 'node_120']),
+    'node_120': CampusNode(id: 'node_120', position: LatLng(7.32760333, 3.88138333), label: null, connectedNodeIds: ['node_119', 'node_121']),
+    'node_121': CampusNode(id: 'node_121', position: LatLng(7.32756000, 3.88129333), label: null, connectedNodeIds: ['node_120', 'node_122']),
+    'node_122': CampusNode(id: 'node_122', position: LatLng(7.32743000, 3.88114167), label: null, connectedNodeIds: ['node_121', 'node_123', 'node_233']),
+    'node_123': CampusNode(id: 'node_123', position: LatLng(7.32735000, 3.88099500), label: null, connectedNodeIds: ['node_080', 'node_122', 'node_124', 'node_232']),
+    'node_124': CampusNode(id: 'node_124', position: LatLng(7.32728167, 3.88085833), label: null, connectedNodeIds: ['node_080', 'node_123', 'node_125', 'node_231']),
+    'node_125': CampusNode(id: 'node_125', position: LatLng(7.32721000, 3.88065833), label: null, connectedNodeIds: ['node_012', 'node_124', 'node_126', 'node_230']),
+    'node_126': CampusNode(id: 'node_126', position: LatLng(7.32710833, 3.88047500), label: null, connectedNodeIds: ['node_011', 'node_125', 'node_127', 'node_229']),
+    'node_127': CampusNode(id: 'node_127', position: LatLng(7.32702667, 3.88028167), label: null, connectedNodeIds: ['node_010', 'node_126', 'node_128', 'node_228']),
+    'node_128': CampusNode(id: 'node_128', position: LatLng(7.32694333, 3.88008167), label: null, connectedNodeIds: ['node_127', 'node_129', 'node_227']),
+    'node_129': CampusNode(id: 'node_129', position: LatLng(7.32686167, 3.87988500), label: null, connectedNodeIds: ['node_007', 'node_128', 'node_130', 'node_225']),
+    'node_130': CampusNode(id: 'node_130', position: LatLng(7.32680667, 3.87969167), label: null, connectedNodeIds: ['node_129', 'node_131']),
+    'node_131': CampusNode(id: 'node_131', position: LatLng(7.32669333, 3.87950667), label: null, connectedNodeIds: ['node_004', 'node_130', 'node_132', 'node_223', 'node_393']),
+    'node_132': CampusNode(id: 'node_132', position: LatLng(7.32665500, 3.87930500), label: null, connectedNodeIds: ['node_003', 'node_131', 'node_133', 'node_222', 'node_391', 'node_392']),
+    'node_133': CampusNode(id: 'node_133', position: LatLng(7.32660833, 3.87910167), label: null, connectedNodeIds: ['node_001', 'node_002', 'node_132', 'node_134', 'node_221', 'node_390', 'node_391']),
+    'node_134': CampusNode(id: 'node_134', position: LatLng(7.32657833, 3.87890167), label: null, connectedNodeIds: ['node_133', 'node_135', 'node_220']),
+    'node_135': CampusNode(id: 'node_135', position: LatLng(7.32656167, 3.87868500), label: null, connectedNodeIds: ['node_134', 'node_136', 'node_219']),
+    'node_136': CampusNode(id: 'node_136', position: LatLng(7.32652000, 3.87848500), label: null, connectedNodeIds: ['node_135', 'node_137']),
+    'node_137': CampusNode(id: 'node_137', position: LatLng(7.32651333, 3.87827167), label: null, connectedNodeIds: ['node_136', 'node_138', 'node_216']),
+    'node_138': CampusNode(id: 'node_138', position: LatLng(7.32649000, 3.87806667), label: null, connectedNodeIds: ['node_137', 'node_139', 'node_148', 'node_215']),
+    'node_139': CampusNode(id: 'node_139', position: LatLng(7.32631667, 3.87802667), label: null, connectedNodeIds: ['node_138', 'node_140', 'node_147', 'node_195']),
+    'node_140': CampusNode(id: 'node_140', position: LatLng(7.32611333, 3.87800500), label: null, connectedNodeIds: ['node_139', 'node_141', 'node_194', 'node_361', 'node_362', 'node_370', 'node_377', 'node_378', 'node_379']),
+    'node_141': CampusNode(id: 'node_141', position: LatLng(7.32601667, 3.87796500), label: null, connectedNodeIds: ['node_140', 'node_142', 'node_379']),
+    'node_142': CampusNode(id: 'node_142', position: LatLng(7.32588000, 3.87793500), label: null, connectedNodeIds: ['node_141', 'node_143', 'node_380']),
+    'node_143': CampusNode(id: 'node_143', position: LatLng(7.32573500, 3.87798000), label: null, connectedNodeIds: ['node_142', 'node_144', 'node_381', 'node_382']),
+    'node_144': CampusNode(id: 'node_144', position: LatLng(7.32564667, 3.87794167), label: null, connectedNodeIds: ['node_143', 'node_145', 'node_381', 'node_382', 'node_389']),
+    'node_145': CampusNode(id: 'node_145', position: LatLng(7.32544333, 3.87794000), label: null, connectedNodeIds: ['node_144', 'node_146', 'node_383', 'node_386']),
+    'node_146': CampusNode(id: 'node_146', position: LatLng(7.32529333, 3.87791167), label: null, connectedNodeIds: ['node_145']),
+    'node_147': CampusNode(id: 'node_147', position: LatLng(7.32623167, 3.87800500), label: null, connectedNodeIds: ['node_139', 'node_148', 'node_194', 'node_361', 'node_370', 'node_378']),
+    'node_148': CampusNode(id: 'node_148', position: LatLng(7.32643000, 3.87798167), label: null, connectedNodeIds: ['node_138', 'node_147', 'node_149', 'node_195', 'node_214', 'node_215']),
+    'node_149': CampusNode(id: 'node_149', position: LatLng(7.32663167, 3.87792500), label: null, connectedNodeIds: ['node_148', 'node_150', 'node_196', 'node_212']),
+    'node_150': CampusNode(id: 'node_150', position: LatLng(7.32681333, 3.87783000), label: null, connectedNodeIds: ['node_149', 'node_151', 'node_211']),
+    'node_151': CampusNode(id: 'node_151', position: LatLng(7.32698833, 3.87772500), label: null, connectedNodeIds: ['node_150', 'node_152', 'node_210']),
+    'node_152': CampusNode(id: 'node_152', position: LatLng(7.32717333, 3.87764500), label: null, connectedNodeIds: ['node_151', 'node_153', 'node_208', 'node_209']),
+    'node_153': CampusNode(id: 'node_153', position: LatLng(7.32731333, 3.87761667), label: null, connectedNodeIds: ['node_152', 'node_154', 'node_189', 'node_208']),
+    'node_154': CampusNode(id: 'node_154', position: LatLng(7.32741833, 3.87751833), label: null, connectedNodeIds: ['node_153', 'node_155']),
+    'node_155': CampusNode(id: 'node_155', position: LatLng(7.32742667, 3.87742667), label: null, connectedNodeIds: ['node_154', 'node_156']),
+    'node_156': CampusNode(id: 'node_156', position: LatLng(7.32762833, 3.87738667), label: null, connectedNodeIds: ['node_155', 'node_157']),
+    'node_157': CampusNode(id: 'node_157', position: LatLng(7.32782500, 3.87734333), label: null, connectedNodeIds: ['node_156', 'node_158']),
+    'node_158': CampusNode(id: 'node_158', position: LatLng(7.32801833, 3.87728667), label: null, connectedNodeIds: ['node_157', 'node_159']),
+    'node_159': CampusNode(id: 'node_159', position: LatLng(7.32816667, 3.87726500), label: null, connectedNodeIds: ['node_158', 'node_160', 'node_165', 'node_166', 'node_197']),
+    'node_160': CampusNode(id: 'node_160', position: LatLng(7.32833167, 3.87715333), label: null, connectedNodeIds: ['node_159', 'node_161']),
+    'node_161': CampusNode(id: 'node_161', position: LatLng(7.32842500, 3.87714667), label: null, connectedNodeIds: ['node_160', 'node_162']),
+    'node_162': CampusNode(id: 'node_162', position: LatLng(7.32836667, 3.87772000), label: null, connectedNodeIds: ['node_161', 'node_163']),
+    'node_163': CampusNode(id: 'node_163', position: LatLng(7.32830000, 3.87753500), label: null, connectedNodeIds: ['node_162', 'node_164']),
+    'node_164': CampusNode(id: 'node_164', position: LatLng(7.32825833, 3.87744667), label: null, connectedNodeIds: ['node_163', 'node_165']),
+    'node_165': CampusNode(id: 'node_165', position: LatLng(7.32821000, 3.87735167), label: null, connectedNodeIds: ['node_159', 'node_164', 'node_166']),
+    'node_166': CampusNode(id: 'node_166', position: LatLng(7.32819833, 3.87719167), label: null, connectedNodeIds: ['node_159', 'node_165', 'node_167', 'node_197']),
+    'node_167': CampusNode(id: 'node_167', position: LatLng(7.32810500, 3.87703167), label: null, connectedNodeIds: ['node_166', 'node_168', 'node_198', 'node_199']),
+    'node_168': CampusNode(id: 'node_168', position: LatLng(7.32807333, 3.87689167), label: null, connectedNodeIds: ['node_167', 'node_169']),
+    'node_169': CampusNode(id: 'node_169', position: LatLng(7.32802333, 3.87696000), label: null, connectedNodeIds: ['node_168', 'node_170', 'node_199']),
+    'node_170': CampusNode(id: 'node_170', position: LatLng(7.32782333, 3.87699500), label: null, connectedNodeIds: ['node_169', 'node_171', 'node_200']),
+    'node_171': CampusNode(id: 'node_171', position: LatLng(7.32767167, 3.87701833), label: null, connectedNodeIds: ['node_170', 'node_172', 'node_201']),
+    'node_172': CampusNode(id: 'node_172', position: LatLng(7.32752167, 3.87703333), label: null, connectedNodeIds: ['node_171', 'node_173', 'node_202']),
+    'node_173': CampusNode(id: 'node_173', position: LatLng(7.32747167, 3.87682500), label: null, connectedNodeIds: ['node_172', 'node_174', 'node_183', 'node_184']),
+    'node_174': CampusNode(id: 'node_174', position: LatLng(7.32744500, 3.87672833), label: null, connectedNodeIds: ['node_173', 'node_175', 'node_182', 'node_183']),
+    'node_175': CampusNode(id: 'node_175', position: LatLng(7.32729000, 3.87660000), label: null, connectedNodeIds: ['node_174', 'node_176']),
+    'node_176': CampusNode(id: 'node_176', position: LatLng(7.32709833, 3.87655167), label: null, connectedNodeIds: ['node_175', 'node_177']),
+    'node_177': CampusNode(id: 'node_177', position: LatLng(7.32690833, 3.87652500), label: null, connectedNodeIds: ['node_176', 'node_178']),
+    'node_178': CampusNode(id: 'node_178', position: LatLng(7.32680500, 3.87656833), label: null, connectedNodeIds: ['node_177', 'node_179']),
+    'node_179': CampusNode(id: 'node_179', position: LatLng(7.32684333, 3.87668333), label: null, connectedNodeIds: ['node_178', 'node_180']),
+    'node_180': CampusNode(id: 'node_180', position: LatLng(7.32700500, 3.87667667), label: null, connectedNodeIds: ['node_179', 'node_181']),
+    'node_181': CampusNode(id: 'node_181', position: LatLng(7.32720000, 3.87671167), label: null, connectedNodeIds: ['node_180', 'node_182']),
+    'node_182': CampusNode(id: 'node_182', position: LatLng(7.32735000, 3.87673333), label: null, connectedNodeIds: ['node_174', 'node_181', 'node_183']),
+    'node_183': CampusNode(id: 'node_183', position: LatLng(7.32741833, 3.87680000), label: null, connectedNodeIds: ['node_173', 'node_174', 'node_182', 'node_184']),
+    'node_184': CampusNode(id: 'node_184', position: LatLng(7.32742500, 3.87689333), label: null, connectedNodeIds: ['node_173', 'node_183', 'node_185']),
+    'node_185': CampusNode(id: 'node_185', position: LatLng(7.32729000, 3.87696500), label: null, connectedNodeIds: ['node_184', 'node_186', 'node_203', 'node_204']),
+    'node_186': CampusNode(id: 'node_186', position: LatLng(7.32726500, 3.87710500), label: null, connectedNodeIds: ['node_185', 'node_187', 'node_203', 'node_205']),
+    'node_187': CampusNode(id: 'node_187', position: LatLng(7.32728167, 3.87730500), label: null, connectedNodeIds: ['node_186', 'node_188', 'node_205', 'node_206']),
+    'node_188': CampusNode(id: 'node_188', position: LatLng(7.32731000, 3.87749667), label: null, connectedNodeIds: ['node_187', 'node_189', 'node_206', 'node_207', 'node_208']),
+    'node_189': CampusNode(id: 'node_189', position: LatLng(7.32733667, 3.87765333), label: null, connectedNodeIds: ['node_153', 'node_188', 'node_190']),
+    'node_190': CampusNode(id: 'node_190', position: LatLng(7.32741667, 3.87784333), label: null, connectedNodeIds: ['node_189', 'node_191']),
+    'node_191': CampusNode(id: 'node_191', position: LatLng(7.32745167, 3.87793333), label: null, connectedNodeIds: ['node_190', 'node_192']),
+    'node_192': CampusNode(id: 'node_192', position: LatLng(7.32750667, 3.87811333), label: null, connectedNodeIds: ['node_191', 'node_193']),
+    'node_193': CampusNode(id: 'node_193', position: LatLng(7.32753167, 3.87821000), label: null, connectedNodeIds: ['node_192']),
+    'node_194': CampusNode(id: 'node_194', position: LatLng(7.32618500, 3.87801000), label: null, connectedNodeIds: ['node_140', 'node_147', 'node_195', 'node_361', 'node_370', 'node_378']),
+    'node_195': CampusNode(id: 'node_195', position: LatLng(7.32637833, 3.87801833), label: null, connectedNodeIds: ['node_139', 'node_148', 'node_194', 'node_196', 'node_215']),
+    'node_196': CampusNode(id: 'node_196', position: LatLng(7.32657000, 3.87796833), label: null, connectedNodeIds: ['node_149', 'node_195']),
+    'node_197': CampusNode(id: 'node_197', position: LatLng(7.32820667, 3.87723500), label: null, connectedNodeIds: ['node_159', 'node_166', 'node_198']),
+    'node_198': CampusNode(id: 'node_198', position: LatLng(7.32810167, 3.87707167), label: null, connectedNodeIds: ['node_167', 'node_197', 'node_199']),
+    'node_199': CampusNode(id: 'node_199', position: LatLng(7.32801000, 3.87702833), label: null, connectedNodeIds: ['node_167', 'node_169', 'node_198', 'node_200']),
+    'node_200': CampusNode(id: 'node_200', position: LatLng(7.32787333, 3.87698667), label: null, connectedNodeIds: ['node_170', 'node_199', 'node_201']),
+    'node_201': CampusNode(id: 'node_201', position: LatLng(7.32766667, 3.87702000), label: null, connectedNodeIds: ['node_171', 'node_200', 'node_202']),
+    'node_202': CampusNode(id: 'node_202', position: LatLng(7.32745833, 3.87701333), label: null, connectedNodeIds: ['node_172', 'node_201', 'node_203']),
+    'node_203': CampusNode(id: 'node_203', position: LatLng(7.32730500, 3.87702667), label: null, connectedNodeIds: ['node_185', 'node_186', 'node_202', 'node_204']),
+    'node_204': CampusNode(id: 'node_204', position: LatLng(7.32721333, 3.87700500), label: null, connectedNodeIds: ['node_185', 'node_203', 'node_205']),
+    'node_205': CampusNode(id: 'node_205', position: LatLng(7.32726833, 3.87719833), label: null, connectedNodeIds: ['node_186', 'node_187', 'node_204', 'node_206']),
+    'node_206': CampusNode(id: 'node_206', position: LatLng(7.32728833, 3.87739167), label: null, connectedNodeIds: ['node_187', 'node_188', 'node_205', 'node_207']),
+    'node_207': CampusNode(id: 'node_207', position: LatLng(7.32729500, 3.87748000), label: null, connectedNodeIds: ['node_188', 'node_206', 'node_208']),
+    'node_208': CampusNode(id: 'node_208', position: LatLng(7.32724833, 3.87757000), label: null, connectedNodeIds: ['node_152', 'node_153', 'node_188', 'node_207', 'node_209']),
+    'node_209': CampusNode(id: 'node_209', position: LatLng(7.32716500, 3.87760167), label: null, connectedNodeIds: ['node_152', 'node_208', 'node_210']),
+    'node_210': CampusNode(id: 'node_210', position: LatLng(7.32697167, 3.87766333), label: null, connectedNodeIds: ['node_151', 'node_209', 'node_211']),
+    'node_211': CampusNode(id: 'node_211', position: LatLng(7.32679167, 3.87774500), label: null, connectedNodeIds: ['node_150', 'node_210', 'node_212']),
+    'node_212': CampusNode(id: 'node_212', position: LatLng(7.32661333, 3.87782667), label: null, connectedNodeIds: ['node_149', 'node_211', 'node_213']),
+    'node_213': CampusNode(id: 'node_213', position: LatLng(7.32650833, 3.87783167), label: null, connectedNodeIds: ['node_212', 'node_214']),
+    'node_214': CampusNode(id: 'node_214', position: LatLng(7.32642667, 3.87788167), label: null, connectedNodeIds: ['node_148', 'node_213', 'node_215']),
+    'node_215': CampusNode(id: 'node_215', position: LatLng(7.32644833, 3.87808167), label: null, connectedNodeIds: ['node_138', 'node_148', 'node_195', 'node_214', 'node_216']),
+    'node_216': CampusNode(id: 'node_216', position: LatLng(7.32645500, 3.87823333), label: null, connectedNodeIds: ['node_137', 'node_215', 'node_217']),
+    'node_217': CampusNode(id: 'node_217', position: LatLng(7.32645333, 3.87839500), label: null, connectedNodeIds: ['node_216', 'node_218']),
+    'node_218': CampusNode(id: 'node_218', position: LatLng(7.32647500, 3.87859667), label: null, connectedNodeIds: ['node_217', 'node_219']),
+    'node_219': CampusNode(id: 'node_219', position: LatLng(7.32650167, 3.87874000), label: null, connectedNodeIds: ['node_135', 'node_218', 'node_220']),
+    'node_220': CampusNode(id: 'node_220', position: LatLng(7.32652167, 3.87893500), label: null, connectedNodeIds: ['node_134', 'node_219', 'node_221']),
+    'node_221': CampusNode(id: 'node_221', position: LatLng(7.32654667, 3.87913333), label: null, connectedNodeIds: ['node_002', 'node_133', 'node_220', 'node_222']),
+    'node_222': CampusNode(id: 'node_222', position: LatLng(7.32657833, 3.87932667), label: null, connectedNodeIds: ['node_003', 'node_132', 'node_221', 'node_223', 'node_392']),
+    'node_223': CampusNode(id: 'node_223', position: LatLng(7.32663833, 3.87952000), label: null, connectedNodeIds: ['node_004', 'node_131', 'node_222', 'node_224', 'node_393']),
+    'node_224': CampusNode(id: 'node_224', position: LatLng(7.32669167, 3.87971667), label: null, connectedNodeIds: ['node_005', 'node_006', 'node_223', 'node_225', 'node_394']),
+    'node_225': CampusNode(id: 'node_225', position: LatLng(7.32676000, 3.87990667), label: null, connectedNodeIds: ['node_007', 'node_129', 'node_224', 'node_226']),
+    'node_226': CampusNode(id: 'node_226', position: LatLng(7.32681167, 3.88004667), label: null, connectedNodeIds: ['node_008', 'node_225', 'node_227']),
+    'node_227': CampusNode(id: 'node_227', position: LatLng(7.32688333, 3.88017167), label: null, connectedNodeIds: ['node_009', 'node_128', 'node_226', 'node_228']),
+    'node_228': CampusNode(id: 'node_228', position: LatLng(7.32694167, 3.88030333), label: null, connectedNodeIds: ['node_010', 'node_127', 'node_227', 'node_229']),
+    'node_229': CampusNode(id: 'node_229', position: LatLng(7.32703833, 3.88048833), label: null, connectedNodeIds: ['node_011', 'node_126', 'node_228', 'node_230']),
+    'node_230': CampusNode(id: 'node_230', position: LatLng(7.32713000, 3.88066500), label: null, connectedNodeIds: ['node_012', 'node_125', 'node_229', 'node_231']),
+    'node_231': CampusNode(id: 'node_231', position: LatLng(7.32721000, 3.88085667), label: null, connectedNodeIds: ['node_124', 'node_230', 'node_232']),
+    'node_232': CampusNode(id: 'node_232', position: LatLng(7.32725667, 3.88099500), label: null, connectedNodeIds: ['node_080', 'node_123', 'node_231', 'node_233']),
+    'node_233': CampusNode(id: 'node_233', position: LatLng(7.32733333, 3.88113000), label: null, connectedNodeIds: ['node_122', 'node_232', 'node_234']),
+    'node_234': CampusNode(id: 'node_234', position: LatLng(7.32742667, 3.88131000), label: null, connectedNodeIds: ['node_233', 'node_235']),
+    'node_235': CampusNode(id: 'node_235', position: LatLng(7.32752833, 3.88148167), label: null, connectedNodeIds: ['node_234', 'node_236']),
+    'node_236': CampusNode(id: 'node_236', position: LatLng(7.32759167, 3.88155833), label: null, connectedNodeIds: ['node_235', 'node_237']),
+    'node_237': CampusNode(id: 'node_237', position: LatLng(7.32770000, 3.88172167), label: null, connectedNodeIds: ['node_236', 'node_238']),
+    'node_238': CampusNode(id: 'node_238', position: LatLng(7.32780667, 3.88189500), label: null, connectedNodeIds: ['node_237', 'node_239']),
+    'node_239': CampusNode(id: 'node_239', position: LatLng(7.32785667, 3.88199167), label: null, connectedNodeIds: ['node_238', 'node_240']),
+    'node_240': CampusNode(id: 'node_240', position: LatLng(7.32797833, 3.88214500), label: null, connectedNodeIds: ['node_239', 'node_241']),
+    'node_241': CampusNode(id: 'node_241', position: LatLng(7.32807500, 3.88230833), label: null, connectedNodeIds: ['node_240', 'node_242', 'node_248']),
+    'node_242': CampusNode(id: 'node_242', position: LatLng(7.32816500, 3.88243167), label: null, connectedNodeIds: ['node_241', 'node_243', 'node_247']),
+    'node_243': CampusNode(id: 'node_243', position: LatLng(7.32825500, 3.88254500), label: null, connectedNodeIds: ['node_242', 'node_244', 'node_247']),
+    'node_244': CampusNode(id: 'node_244', position: LatLng(7.32832833, 3.88267833), label: null, connectedNodeIds: ['node_243', 'node_245']),
+    'node_245': CampusNode(id: 'node_245', position: LatLng(7.32841500, 3.88266333), label: null, connectedNodeIds: ['node_244', 'node_246']),
+    'node_246': CampusNode(id: 'node_246', position: LatLng(7.32840500, 3.88258667), label: null, connectedNodeIds: ['node_245', 'node_247']),
+    'node_247': CampusNode(id: 'node_247', position: LatLng(7.32826333, 3.88243667), label: null, connectedNodeIds: ['node_242', 'node_243', 'node_246', 'node_248']),
+    'node_248': CampusNode(id: 'node_248', position: LatLng(7.32816167, 3.88224667), label: null, connectedNodeIds: ['node_241', 'node_247', 'node_249']),
+    'node_249': CampusNode(id: 'node_249', position: LatLng(7.32811000, 3.88215333), label: null, connectedNodeIds: ['node_248', 'node_250']),
+    'node_250': CampusNode(id: 'node_250', position: LatLng(7.32801000, 3.88197500), label: null, connectedNodeIds: ['node_249', 'node_251']),
+    'node_251': CampusNode(id: 'node_251', position: LatLng(7.32789333, 3.88182000), label: null, connectedNodeIds: ['node_118', 'node_250', 'node_252', 'node_263']),
+    'node_252': CampusNode(id: 'node_252', position: LatLng(7.32785167, 3.88173500), label: null, connectedNodeIds: ['node_118', 'node_251', 'node_253', 'node_263']),
+    'node_253': CampusNode(id: 'node_253', position: LatLng(7.32861833, 3.88162333), label: null, connectedNodeIds: ['node_099', 'node_100', 'node_252', 'node_254', 'node_257']),
+    'node_254': CampusNode(id: 'node_254', position: LatLng(7.32846000, 3.88123000), label: null, connectedNodeIds: ['node_093', 'node_253', 'node_255']),
+    'node_255': CampusNode(id: 'node_255', position: LatLng(7.32853833, 3.88140667), label: null, connectedNodeIds: ['node_094', 'node_098', 'node_254', 'node_256']),
+    'node_256': CampusNode(id: 'node_256', position: LatLng(7.32859333, 3.88148333), label: null, connectedNodeIds: ['node_099', 'node_255', 'node_257']),
+    'node_257': CampusNode(id: 'node_257', position: LatLng(7.32862833, 3.88157667), label: null, connectedNodeIds: ['node_099', 'node_100', 'node_253', 'node_256', 'node_258']),
+    'node_258': CampusNode(id: 'node_258', position: LatLng(7.32846333, 3.88172333), label: null, connectedNodeIds: ['node_101', 'node_102', 'node_257', 'node_259']),
+    'node_259': CampusNode(id: 'node_259', position: LatLng(7.32829000, 3.88181833), label: null, connectedNodeIds: ['node_258', 'node_260']),
+    'node_260': CampusNode(id: 'node_260', position: LatLng(7.32819167, 3.88180000), label: null, connectedNodeIds: ['node_259', 'node_261']),
+    'node_261': CampusNode(id: 'node_261', position: LatLng(7.32812167, 3.88174000), label: null, connectedNodeIds: ['node_260', 'node_262']),
+    'node_262': CampusNode(id: 'node_262', position: LatLng(7.32804500, 3.88168333), label: null, connectedNodeIds: ['node_117', 'node_261', 'node_263']),
+    'node_263': CampusNode(id: 'node_263', position: LatLng(7.32790000, 3.88173833), label: null, connectedNodeIds: ['node_117', 'node_118', 'node_251', 'node_252', 'node_262']),
+    'node_264': CampusNode(id: 'node_264', position: LatLng(7.32476667, 3.88218333), label: null, connectedNodeIds: ['node_034', 'node_065', 'node_265']),
+    'node_265': CampusNode(id: 'node_265', position: LatLng(7.32463167, 3.88224000), label: null, connectedNodeIds: ['node_035', 'node_064', 'node_264', 'node_266']),
+    'node_266': CampusNode(id: 'node_266', position: LatLng(7.32448333, 3.88227667), label: null, connectedNodeIds: ['node_036', 'node_063', 'node_064', 'node_265', 'node_267']),
+    'node_267': CampusNode(id: 'node_267', position: LatLng(7.32440167, 3.88233833), label: null, connectedNodeIds: ['node_036', 'node_062', 'node_063', 'node_266', 'node_268', 'node_433']),
+    'node_268': CampusNode(id: 'node_268', position: LatLng(7.32421333, 3.88239667), label: null, connectedNodeIds: ['node_037', 'node_038', 'node_062', 'node_267', 'node_269', 'node_433']),
+    'node_269': CampusNode(id: 'node_269', position: LatLng(7.32412333, 3.88237500), label: null, connectedNodeIds: ['node_038', 'node_061', 'node_268', 'node_270', 'node_325', 'node_326']),
+    'node_270': CampusNode(id: 'node_270', position: LatLng(7.32397000, 3.88223500), label: null, connectedNodeIds: ['node_039', 'node_269', 'node_271', 'node_324']),
+    'node_271': CampusNode(id: 'node_271', position: LatLng(7.32393667, 3.88214333), label: null, connectedNodeIds: ['node_040', 'node_270', 'node_272', 'node_324']),
+    'node_272': CampusNode(id: 'node_272', position: LatLng(7.32387000, 3.88207167), label: null, connectedNodeIds: ['node_040', 'node_271', 'node_273', 'node_323']),
+    'node_273': CampusNode(id: 'node_273', position: LatLng(7.32384167, 3.88198167), label: null, connectedNodeIds: ['node_041', 'node_045', 'node_272', 'node_274', 'node_323']),
+    'node_274': CampusNode(id: 'node_274', position: LatLng(7.32379500, 3.88178667), label: null, connectedNodeIds: ['node_046', 'node_273', 'node_275', 'node_322']),
+    'node_275': CampusNode(id: 'node_275', position: LatLng(7.32372500, 3.88164833), label: null, connectedNodeIds: ['node_274', 'node_276']),
+    'node_276': CampusNode(id: 'node_276', position: LatLng(7.32367500, 3.88146500), label: null, connectedNodeIds: ['node_275', 'node_277', 'node_306']),
+    'node_277': CampusNode(id: 'node_277', position: LatLng(7.32364000, 3.88127000), label: null, connectedNodeIds: ['node_276', 'node_278', 'node_307', 'node_308']),
+    'node_278': CampusNode(id: 'node_278', position: LatLng(7.32360333, 3.88107833), label: null, connectedNodeIds: ['node_277', 'node_279', 'node_309', 'node_310']),
+    'node_279': CampusNode(id: 'node_279', position: LatLng(7.32354333, 3.88088833), label: null, connectedNodeIds: ['node_278', 'node_280']),
+    'node_280': CampusNode(id: 'node_280', position: LatLng(7.32352000, 3.88079000), label: null, connectedNodeIds: ['node_279', 'node_281']),
+    'node_281': CampusNode(id: 'node_281', position: LatLng(7.32344833, 3.88060833), label: null, connectedNodeIds: ['node_280', 'node_282']),
+    'node_282': CampusNode(id: 'node_282', position: LatLng(7.32338167, 3.88041167), label: null, connectedNodeIds: ['node_281', 'node_283']),
+    'node_283': CampusNode(id: 'node_283', position: LatLng(7.32331000, 3.88028833), label: null, connectedNodeIds: ['node_282', 'node_284']),
+    'node_284': CampusNode(id: 'node_284', position: LatLng(7.32321500, 3.88028667), label: null, connectedNodeIds: ['node_283', 'node_285']),
+    'node_285': CampusNode(id: 'node_285', position: LatLng(7.32303000, 3.88033000), label: null, connectedNodeIds: ['node_284', 'node_286']),
+    'node_286': CampusNode(id: 'node_286', position: LatLng(7.32282833, 3.88032667), label: null, connectedNodeIds: ['node_285', 'node_287', 'node_293']),
+    'node_287': CampusNode(id: 'node_287', position: LatLng(7.32263500, 3.88037167), label: null, connectedNodeIds: ['node_286', 'node_288', 'node_292']),
+    'node_288': CampusNode(id: 'node_288', position: LatLng(7.32248500, 3.88041833), label: null, connectedNodeIds: ['node_287', 'node_289', 'node_291']),
+    'node_289': CampusNode(id: 'node_289', position: LatLng(7.32229500, 3.88045333), label: null, connectedNodeIds: ['node_288', 'node_290']),
+    'node_290': CampusNode(id: 'node_290', position: LatLng(7.32219167, 3.88045333), label: null, connectedNodeIds: ['node_289', 'node_291']),
+    'node_291': CampusNode(id: 'node_291', position: LatLng(7.32240500, 3.88039167), label: null, connectedNodeIds: ['node_288', 'node_290', 'node_292']),
+    'node_292': CampusNode(id: 'node_292', position: LatLng(7.32260333, 3.88036167), label: null, connectedNodeIds: ['node_287', 'node_291', 'node_293']),
+    'node_293': CampusNode(id: 'node_293', position: LatLng(7.32274667, 3.88032500), label: null, connectedNodeIds: ['node_286', 'node_292', 'node_294']),
+    'node_294': CampusNode(id: 'node_294', position: LatLng(7.32282333, 3.88049833), label: null, connectedNodeIds: ['node_293', 'node_295']),
+    'node_295': CampusNode(id: 'node_295', position: LatLng(7.32287167, 3.88068333), label: null, connectedNodeIds: ['node_294', 'node_296']),
+    'node_296': CampusNode(id: 'node_296', position: LatLng(7.32293500, 3.88086333), label: null, connectedNodeIds: ['node_295', 'node_297']),
+    'node_297': CampusNode(id: 'node_297', position: LatLng(7.32300000, 3.88105833), label: null, connectedNodeIds: ['node_296', 'node_298']),
+    'node_298': CampusNode(id: 'node_298', position: LatLng(7.32303833, 3.88119500), label: null, connectedNodeIds: ['node_297', 'node_299', 'node_313']),
+    'node_299': CampusNode(id: 'node_299', position: LatLng(7.32312667, 3.88123667), label: null, connectedNodeIds: ['node_298', 'node_300', 'node_312', 'node_313']),
+    'node_300': CampusNode(id: 'node_300', position: LatLng(7.32324833, 3.88133833), label: null, connectedNodeIds: ['node_299', 'node_301']),
+    'node_301': CampusNode(id: 'node_301', position: LatLng(7.32326167, 3.88148500), label: null, connectedNodeIds: ['node_300', 'node_302']),
+    'node_302': CampusNode(id: 'node_302', position: LatLng(7.32330833, 3.88157667), label: null, connectedNodeIds: ['node_301', 'node_303']),
+    'node_303': CampusNode(id: 'node_303', position: LatLng(7.32339333, 3.88162167), label: null, connectedNodeIds: ['node_302', 'node_304']),
+    'node_304': CampusNode(id: 'node_304', position: LatLng(7.32343500, 3.88177833), label: null, connectedNodeIds: ['node_048', 'node_303', 'node_305']),
+    'node_305': CampusNode(id: 'node_305', position: LatLng(7.32361833, 3.88181167), label: null, connectedNodeIds: ['node_047', 'node_304', 'node_306']),
+    'node_306': CampusNode(id: 'node_306', position: LatLng(7.32369000, 3.88136667), label: null, connectedNodeIds: ['node_276', 'node_305', 'node_307']),
+    'node_307': CampusNode(id: 'node_307', position: LatLng(7.32366333, 3.88127833), label: null, connectedNodeIds: ['node_277', 'node_306', 'node_308']),
+    'node_308': CampusNode(id: 'node_308', position: LatLng(7.32366500, 3.88118500), label: null, connectedNodeIds: ['node_277', 'node_307', 'node_309']),
+    'node_309': CampusNode(id: 'node_309', position: LatLng(7.32365333, 3.88108667), label: null, connectedNodeIds: ['node_278', 'node_308', 'node_310']),
+    'node_310': CampusNode(id: 'node_310', position: LatLng(7.32356167, 3.88109167), label: null, connectedNodeIds: ['node_278', 'node_309', 'node_311']),
+    'node_311': CampusNode(id: 'node_311', position: LatLng(7.32336500, 3.88111833), label: null, connectedNodeIds: ['node_310', 'node_312']),
+    'node_312': CampusNode(id: 'node_312', position: LatLng(7.32317500, 3.88117333), label: null, connectedNodeIds: ['node_299', 'node_311', 'node_313']),
+    'node_313': CampusNode(id: 'node_313', position: LatLng(7.32302500, 3.88122833), label: null, connectedNodeIds: ['node_298', 'node_299', 'node_312', 'node_314']),
+    'node_314': CampusNode(id: 'node_314', position: LatLng(7.32283833, 3.88131000), label: null, connectedNodeIds: ['node_313', 'node_315']),
+    'node_315': CampusNode(id: 'node_315', position: LatLng(7.32273833, 3.88132667), label: null, connectedNodeIds: ['node_314', 'node_316']),
+    'node_316': CampusNode(id: 'node_316', position: LatLng(7.32264833, 3.88137500), label: null, connectedNodeIds: ['node_315', 'node_317']),
+    'node_317': CampusNode(id: 'node_317', position: LatLng(7.32269333, 3.88158333), label: null, connectedNodeIds: ['node_316', 'node_318']),
+    'node_318': CampusNode(id: 'node_318', position: LatLng(7.32270167, 3.88168000), label: null, connectedNodeIds: ['node_317', 'node_319']),
+    'node_319': CampusNode(id: 'node_319', position: LatLng(7.32274500, 3.88176833), label: null, connectedNodeIds: ['node_318', 'node_320']),
+    'node_320': CampusNode(id: 'node_320', position: LatLng(7.32281667, 3.88194333), label: null, connectedNodeIds: ['node_052', 'node_319', 'node_321']),
+    'node_321': CampusNode(id: 'node_321', position: LatLng(7.32282000, 3.88204167), label: null, connectedNodeIds: ['node_052', 'node_320']),
+    'node_322': CampusNode(id: 'node_322', position: LatLng(7.32380333, 3.88180333), label: null, connectedNodeIds: ['node_045', 'node_046', 'node_274', 'node_323']),
+    'node_323': CampusNode(id: 'node_323', position: LatLng(7.32388667, 3.88198333), label: null, connectedNodeIds: ['node_040', 'node_272', 'node_273', 'node_322', 'node_324']),
+    'node_324': CampusNode(id: 'node_324', position: LatLng(7.32396667, 3.88215667), label: null, connectedNodeIds: ['node_270', 'node_271', 'node_323', 'node_325']),
+    'node_325': CampusNode(id: 'node_325', position: LatLng(7.32405667, 3.88235500), label: null, connectedNodeIds: ['node_038', 'node_061', 'node_269', 'node_324', 'node_326']),
+    'node_326': CampusNode(id: 'node_326', position: LatLng(7.32411000, 3.88243833), label: null, connectedNodeIds: ['node_038', 'node_061', 'node_269', 'node_325', 'node_327', 'node_432']),
+    'node_327': CampusNode(id: 'node_327', position: LatLng(7.32414333, 3.88253333), label: null, connectedNodeIds: ['node_326', 'node_328', 'node_432']),
+    'node_328': CampusNode(id: 'node_328', position: LatLng(7.32421333, 3.88266500), label: null, connectedNodeIds: ['node_327', 'node_329', 'node_431']),
+    'node_329': CampusNode(id: 'node_329', position: LatLng(7.32432333, 3.88284333), label: null, connectedNodeIds: ['node_328', 'node_330', 'node_429', 'node_430']),
+    'node_330': CampusNode(id: 'node_330', position: LatLng(7.32438333, 3.88292667), label: null, connectedNodeIds: ['node_329', 'node_331', 'node_346', 'node_429']),
+    'node_331': CampusNode(id: 'node_331', position: LatLng(7.32448167, 3.88310000), label: null, connectedNodeIds: ['node_330', 'node_332', 'node_345']),
+    'node_332': CampusNode(id: 'node_332', position: LatLng(7.32455500, 3.88316667), label: null, connectedNodeIds: ['node_331', 'node_333', 'node_344']),
+    'node_333': CampusNode(id: 'node_333', position: LatLng(7.32468500, 3.88332833), label: null, connectedNodeIds: ['node_332', 'node_334', 'node_343']),
+    'node_334': CampusNode(id: 'node_334', position: LatLng(7.32483000, 3.88349000), label: null, connectedNodeIds: ['node_333', 'node_335', 'node_342']),
+    'node_335': CampusNode(id: 'node_335', position: LatLng(7.32495167, 3.88363000), label: null, connectedNodeIds: ['node_334', 'node_336', 'node_341']),
+    'node_336': CampusNode(id: 'node_336', position: LatLng(7.32509500, 3.88378833), label: null, connectedNodeIds: ['node_335', 'node_337', 'node_340']),
+    'node_337': CampusNode(id: 'node_337', position: LatLng(7.32523500, 3.88393000), label: null, connectedNodeIds: ['node_336', 'node_338', 'node_339']),
+    'node_338': CampusNode(id: 'node_338', position: LatLng(7.32539667, 3.88406500), label: null, connectedNodeIds: ['node_337', 'node_339']),
+    'node_339': CampusNode(id: 'node_339', position: LatLng(7.32526167, 3.88394667), label: null, connectedNodeIds: ['node_337', 'node_338', 'node_340']),
+    'node_340': CampusNode(id: 'node_340', position: LatLng(7.32513333, 3.88379833), label: null, connectedNodeIds: ['node_336', 'node_339', 'node_341']),
+    'node_341': CampusNode(id: 'node_341', position: LatLng(7.32499667, 3.88364667), label: null, connectedNodeIds: ['node_335', 'node_340', 'node_342']),
+    'node_342': CampusNode(id: 'node_342', position: LatLng(7.32486000, 3.88350167), label: null, connectedNodeIds: ['node_334', 'node_341', 'node_343']),
+    'node_343': CampusNode(id: 'node_343', position: LatLng(7.32472500, 3.88335833), label: null, connectedNodeIds: ['node_333', 'node_342', 'node_344']),
+    'node_344': CampusNode(id: 'node_344', position: LatLng(7.32459167, 3.88318500), label: null, connectedNodeIds: ['node_332', 'node_343', 'node_345']),
+    'node_345': CampusNode(id: 'node_345', position: LatLng(7.32448167, 3.88301000), label: null, connectedNodeIds: ['node_331', 'node_344', 'node_346']),
+    'node_346': CampusNode(id: 'node_346', position: LatLng(7.32441333, 3.88293500), label: null, connectedNodeIds: ['node_330', 'node_345', 'node_347', 'node_429']),
+    'node_347': CampusNode(id: 'node_347', position: LatLng(7.32422667, 3.88300500), label: null, connectedNodeIds: ['node_346', 'node_348', 'node_428']),
+    'node_348': CampusNode(id: 'node_348', position: LatLng(7.32406500, 3.88312667), label: null, connectedNodeIds: ['node_347', 'node_349']),
+    'node_349': CampusNode(id: 'node_349', position: LatLng(7.32394333, 3.88321667), label: null, connectedNodeIds: ['node_348', 'node_350']),
+    'node_350': CampusNode(id: 'node_350', position: LatLng(7.32379500, 3.88335833), label: null, connectedNodeIds: ['node_349', 'node_351', 'node_416', 'node_417']),
+    'node_351': CampusNode(id: 'node_351', position: LatLng(7.32365167, 3.88351500), label: null, connectedNodeIds: ['node_350', 'node_352']),
+    'node_352': CampusNode(id: 'node_352', position: LatLng(7.32358667, 3.88358000), label: null, connectedNodeIds: ['node_351', 'node_353', 'node_358', 'node_413']),
+    'node_353': CampusNode(id: 'node_353', position: LatLng(7.32351000, 3.88364333), label: null, connectedNodeIds: ['node_352', 'node_354', 'node_358', 'node_413']),
+    'node_354': CampusNode(id: 'node_354', position: LatLng(7.32402167, 3.88409000), label: null, connectedNodeIds: ['node_353', 'node_355', 'node_409']),
+    'node_355': CampusNode(id: 'node_355', position: LatLng(7.32387500, 3.88397167), label: null, connectedNodeIds: ['node_354', 'node_356', 'node_409', 'node_410']),
+    'node_356': CampusNode(id: 'node_356', position: LatLng(7.32380333, 3.88391000), label: null, connectedNodeIds: ['node_355', 'node_357', 'node_410', 'node_411']),
+    'node_357': CampusNode(id: 'node_357', position: LatLng(7.32370667, 3.88379333), label: null, connectedNodeIds: ['node_356', 'node_358', 'node_411', 'node_412']),
+    'node_358': CampusNode(id: 'node_358', position: LatLng(7.32358000, 3.88365333), label: null, connectedNodeIds: ['node_352', 'node_353', 'node_357', 'node_413']),
+    'node_359': CampusNode(id: 'node_359', position: LatLng(7.32632333, 3.87816000), label: null, connectedNodeIds: ['node_360', 'node_367', 'node_371']),
+    'node_360': CampusNode(id: 'node_360', position: LatLng(7.32594833, 3.87810167), label: null, connectedNodeIds: ['node_359', 'node_361', 'node_364', 'node_376']),
+    'node_361': CampusNode(id: 'node_361', position: LatLng(7.32617500, 3.87801333), label: null, connectedNodeIds: ['node_140', 'node_147', 'node_194', 'node_360', 'node_362', 'node_370', 'node_378', 'node_379']),
+    'node_362': CampusNode(id: 'node_362', position: LatLng(7.32609667, 3.87808000), label: null, connectedNodeIds: ['node_140', 'node_361', 'node_363', 'node_364', 'node_365', 'node_369', 'node_370', 'node_373', 'node_374', 'node_377', 'node_378']),
+    'node_363': CampusNode(id: 'node_363', position: LatLng(7.32621333, 3.87817667), label: null, connectedNodeIds: ['node_362', 'node_364', 'node_365', 'node_366', 'node_367', 'node_368', 'node_370', 'node_371', 'node_372', 'node_373']),
+    'node_364': CampusNode(id: 'node_364', position: LatLng(7.32600500, 3.87811167), label: null, connectedNodeIds: ['node_360', 'node_362', 'node_363', 'node_365', 'node_369', 'node_374', 'node_376', 'node_377']),
+    'node_365': CampusNode(id: 'node_365', position: LatLng(7.32611833, 3.87817667), label: null, connectedNodeIds: ['node_362', 'node_363', 'node_364', 'node_366', 'node_368', 'node_369', 'node_371', 'node_372', 'node_373', 'node_374', 'node_377']),
+    'node_366': CampusNode(id: 'node_366', position: LatLng(7.32620667, 3.87820833), label: null, connectedNodeIds: ['node_363', 'node_365', 'node_367', 'node_368', 'node_371', 'node_372']),
+    'node_367': CampusNode(id: 'node_367', position: LatLng(7.32626500, 3.87813667), label: null, connectedNodeIds: ['node_359', 'node_363', 'node_366', 'node_368', 'node_370', 'node_371']),
+    'node_368': CampusNode(id: 'node_368', position: LatLng(7.32618167, 3.87820000), label: null, connectedNodeIds: ['node_363', 'node_365', 'node_366', 'node_367', 'node_369', 'node_371', 'node_372', 'node_373']),
+    'node_369': CampusNode(id: 'node_369', position: LatLng(7.32608500, 3.87811667), label: null, connectedNodeIds: ['node_362', 'node_364', 'node_365', 'node_368', 'node_370', 'node_372', 'node_373', 'node_374', 'node_377', 'node_378']),
+    'node_370': CampusNode(id: 'node_370', position: LatLng(7.32619000, 3.87808000), label: null, connectedNodeIds: ['node_140', 'node_147', 'node_194', 'node_361', 'node_362', 'node_363', 'node_367', 'node_369', 'node_371', 'node_373', 'node_378']),
+    'node_371': CampusNode(id: 'node_371', position: LatLng(7.32622000, 3.87815833), label: null, connectedNodeIds: ['node_359', 'node_363', 'node_365', 'node_366', 'node_367', 'node_368', 'node_370', 'node_372', 'node_373']),
+    'node_372': CampusNode(id: 'node_372', position: LatLng(7.32612167, 3.87820167), label: null, connectedNodeIds: ['node_363', 'node_365', 'node_366', 'node_368', 'node_369', 'node_371', 'node_373', 'node_374']),
+    'node_373': CampusNode(id: 'node_373', position: LatLng(7.32612500, 3.87812667), label: null, connectedNodeIds: ['node_362', 'node_363', 'node_365', 'node_368', 'node_369', 'node_370', 'node_371', 'node_372', 'node_374', 'node_377', 'node_378']),
+    'node_374': CampusNode(id: 'node_374', position: LatLng(7.32605667, 3.87817167), label: null, connectedNodeIds: ['node_362', 'node_364', 'node_365', 'node_369', 'node_372', 'node_373', 'node_375', 'node_376', 'node_377']),
+    'node_375': CampusNode(id: 'node_375', position: LatLng(7.32596333, 3.87828667), label: null, connectedNodeIds: ['node_374', 'node_376']),
+    'node_376': CampusNode(id: 'node_376', position: LatLng(7.32597667, 3.87815833), label: null, connectedNodeIds: ['node_360', 'node_364', 'node_374', 'node_375', 'node_377']),
+    'node_377': CampusNode(id: 'node_377', position: LatLng(7.32607500, 3.87809833), label: null, connectedNodeIds: ['node_140', 'node_362', 'node_364', 'node_365', 'node_369', 'node_373', 'node_374', 'node_376', 'node_378']),
+    'node_378': CampusNode(id: 'node_378', position: LatLng(7.32613833, 3.87804333), label: null, connectedNodeIds: ['node_140', 'node_147', 'node_194', 'node_361', 'node_362', 'node_369', 'node_370', 'node_373', 'node_377', 'node_379']),
+    'node_379': CampusNode(id: 'node_379', position: LatLng(7.32608500, 3.87796333), label: null, connectedNodeIds: ['node_140', 'node_141', 'node_361', 'node_378', 'node_380']),
+    'node_380': CampusNode(id: 'node_380', position: LatLng(7.32588667, 3.87794500), label: null, connectedNodeIds: ['node_142', 'node_379', 'node_381']),
+    'node_381': CampusNode(id: 'node_381', position: LatLng(7.32574333, 3.87798000), label: null, connectedNodeIds: ['node_143', 'node_144', 'node_380', 'node_382']),
+    'node_382': CampusNode(id: 'node_382', position: LatLng(7.32563667, 3.87798500), label: null, connectedNodeIds: ['node_143', 'node_144', 'node_381', 'node_383']),
+    'node_383': CampusNode(id: 'node_383', position: LatLng(7.32543167, 3.87800000), label: null, connectedNodeIds: ['node_145', 'node_382', 'node_384', 'node_386']),
+    'node_384': CampusNode(id: 'node_384', position: LatLng(7.32533667, 3.87801333), label: null, connectedNodeIds: ['node_383', 'node_385']),
+    'node_385': CampusNode(id: 'node_385', position: LatLng(7.32538500, 3.87780667), label: null, connectedNodeIds: ['node_384', 'node_386']),
+    'node_386': CampusNode(id: 'node_386', position: LatLng(7.32543833, 3.87792000), label: null, connectedNodeIds: ['node_145', 'node_383', 'node_385', 'node_387']),
+    'node_387': CampusNode(id: 'node_387', position: LatLng(7.32557167, 3.87775333), label: null, connectedNodeIds: ['node_386', 'node_388']),
+    'node_388': CampusNode(id: 'node_388', position: LatLng(7.32554000, 3.87782333), label: null, connectedNodeIds: ['node_387', 'node_389']),
+    'node_389': CampusNode(id: 'node_389', position: LatLng(7.32562000, 3.87785833), label: null, connectedNodeIds: ['node_144', 'node_388']),
+    'node_390': CampusNode(id: 'node_390', position: LatLng(7.32668833, 3.87907333), label: null, connectedNodeIds: ['node_001', 'node_133', 'node_391']),
+    'node_391': CampusNode(id: 'node_391', position: LatLng(7.32663500, 3.87920500), label: null, connectedNodeIds: ['node_001', 'node_002', 'node_132', 'node_133', 'node_390', 'node_392']),
+    'node_392': CampusNode(id: 'node_392', position: LatLng(7.32663000, 3.87940333), label: null, connectedNodeIds: ['node_003', 'node_132', 'node_222', 'node_391', 'node_393']),
+    'node_393': CampusNode(id: 'node_393', position: LatLng(7.32667667, 3.87955167), label: null, connectedNodeIds: ['node_004', 'node_005', 'node_131', 'node_223', 'node_392', 'node_394']),
+    'node_394': CampusNode(id: 'node_394', position: LatLng(7.32664500, 3.87964333), label: null, connectedNodeIds: ['node_004', 'node_005', 'node_224', 'node_393', 'node_395']),
+    'node_395': CampusNode(id: 'node_395', position: LatLng(7.32658667, 3.87984167), label: null, connectedNodeIds: ['node_394', 'node_396']),
+    'node_396': CampusNode(id: 'node_396', position: LatLng(7.32661500, 3.88002833), label: null, connectedNodeIds: ['node_395', 'node_397']),
+    'node_397': CampusNode(id: 'node_397', position: LatLng(7.32664500, 3.88012833), label: null, connectedNodeIds: ['node_396', 'node_398']),
+    'node_398': CampusNode(id: 'node_398', position: LatLng(7.32666833, 3.88032333), label: null, connectedNodeIds: ['node_397', 'node_399']),
+    'node_399': CampusNode(id: 'node_399', position: LatLng(7.32675833, 3.88049000), label: null, connectedNodeIds: ['node_398', 'node_400']),
+    'node_400': CampusNode(id: 'node_400', position: LatLng(7.32679167, 3.88059000), label: null, connectedNodeIds: ['node_399', 'node_401']),
+    'node_401': CampusNode(id: 'node_401', position: LatLng(7.32682000, 3.88067333), label: null, connectedNodeIds: ['node_400', 'node_402']),
+    'node_402': CampusNode(id: 'node_402', position: LatLng(7.32687833, 3.88087000), label: null, connectedNodeIds: ['node_401', 'node_403']),
+    'node_403': CampusNode(id: 'node_403', position: LatLng(7.32685333, 3.88101333), label: null, connectedNodeIds: ['node_014', 'node_402', 'node_404']),
+    'node_404': CampusNode(id: 'node_404', position: LatLng(7.32686167, 3.88111500), label: null, connectedNodeIds: ['node_015', 'node_403']),
+    'node_405': CampusNode(id: 'node_405', position: LatLng(7.32436500, 3.88444833), label: null, connectedNodeIds: ['node_406']),
+    'node_406': CampusNode(id: 'node_406', position: LatLng(7.32431333, 3.88436667), label: null, connectedNodeIds: ['node_405', 'node_407']),
+    'node_407': CampusNode(id: 'node_407', position: LatLng(7.32418000, 3.88423500), label: null, connectedNodeIds: ['node_406', 'node_408']),
+    'node_408': CampusNode(id: 'node_408', position: LatLng(7.32410333, 3.88416667), label: null, connectedNodeIds: ['node_407', 'node_409']),
+    'node_409': CampusNode(id: 'node_409', position: LatLng(7.32395667, 3.88403000), label: null, connectedNodeIds: ['node_354', 'node_355', 'node_408', 'node_410']),
+    'node_410': CampusNode(id: 'node_410', position: LatLng(7.32382333, 3.88388500), label: null, connectedNodeIds: ['node_355', 'node_356', 'node_409', 'node_411']),
+    'node_411': CampusNode(id: 'node_411', position: LatLng(7.32374833, 3.88381833), label: null, connectedNodeIds: ['node_356', 'node_357', 'node_410', 'node_412']),
+    'node_412': CampusNode(id: 'node_412', position: LatLng(7.32368167, 3.88374333), label: null, connectedNodeIds: ['node_357', 'node_411', 'node_413']),
+    'node_413': CampusNode(id: 'node_413', position: LatLng(7.32353500, 3.88360333), label: null, connectedNodeIds: ['node_352', 'node_353', 'node_358', 'node_412', 'node_414']),
+    'node_414': CampusNode(id: 'node_414', position: LatLng(7.32340333, 3.88353333), label: null, connectedNodeIds: ['node_413', 'node_415']),
+    'node_415': CampusNode(id: 'node_415', position: LatLng(7.32378000, 3.88354333), label: null, connectedNodeIds: ['node_414', 'node_416']),
+    'node_416': CampusNode(id: 'node_416', position: LatLng(7.32378000, 3.88346500), label: null, connectedNodeIds: ['node_350', 'node_415', 'node_417']),
+    'node_417': CampusNode(id: 'node_417', position: LatLng(7.32373167, 3.88332167), label: null, connectedNodeIds: ['node_350', 'node_416', 'node_418']),
+    'node_418': CampusNode(id: 'node_418', position: LatLng(7.32361167, 3.88314667), label: null, connectedNodeIds: ['node_417', 'node_419']),
+    'node_419': CampusNode(id: 'node_419', position: LatLng(7.32356667, 3.88299667), label: null, connectedNodeIds: ['node_418', 'node_420']),
+    'node_420': CampusNode(id: 'node_420', position: LatLng(7.32359167, 3.88289833), label: null, connectedNodeIds: ['node_419', 'node_421']),
+    'node_421': CampusNode(id: 'node_421', position: LatLng(7.32355667, 3.88268833), label: null, connectedNodeIds: ['node_420', 'node_422']),
+    'node_422': CampusNode(id: 'node_422', position: LatLng(7.32349333, 3.88261167), label: null, connectedNodeIds: ['node_421', 'node_423']),
+    'node_423': CampusNode(id: 'node_423', position: LatLng(7.32341833, 3.88255333), label: null, connectedNodeIds: ['node_422', 'node_424']),
+    'node_424': CampusNode(id: 'node_424', position: LatLng(7.32341167, 3.88245667), label: null, connectedNodeIds: ['node_423', 'node_425']),
+    'node_425': CampusNode(id: 'node_425', position: LatLng(7.32355667, 3.88232167), label: null, connectedNodeIds: ['node_424', 'node_426']),
+    'node_426': CampusNode(id: 'node_426', position: LatLng(7.32349667, 3.88210000), label: null, connectedNodeIds: ['node_043', 'node_057', 'node_058', 'node_425', 'node_427']),
+    'node_427': CampusNode(id: 'node_427', position: LatLng(7.32351500, 3.88199833), label: null, connectedNodeIds: ['node_043', 'node_057', 'node_058', 'node_059', 'node_426']),
+    'node_428': CampusNode(id: 'node_428', position: LatLng(7.32427000, 3.88296500), label: null, connectedNodeIds: ['node_347', 'node_429']),
+    'node_429': CampusNode(id: 'node_429', position: LatLng(7.32434000, 3.88290000), label: null, connectedNodeIds: ['node_329', 'node_330', 'node_346', 'node_428', 'node_430']),
+    'node_430': CampusNode(id: 'node_430', position: LatLng(7.32429500, 3.88281833), label: null, connectedNodeIds: ['node_329', 'node_429', 'node_431']),
+    'node_431': CampusNode(id: 'node_431', position: LatLng(7.32420667, 3.88264000), label: null, connectedNodeIds: ['node_328', 'node_430', 'node_432']),
+    'node_432': CampusNode(id: 'node_432', position: LatLng(7.32416000, 3.88250000), label: null, connectedNodeIds: ['node_038', 'node_326', 'node_327', 'node_431', 'node_433']),
+    'node_433': CampusNode(id: 'node_433', position: LatLng(7.32430167, 3.88235333), label: 'Campus path end', connectedNodeIds: ['node_037', 'node_062', 'node_267', 'node_268', 'node_432']),
     // --- ADD MORE NODES HERE ---
   },
 
   edges: [
-    // node_000 → node_001 (25.2m)
-    CampusEdge(
-      fromId: 'node_000',
-      toId: 'node_001',
-      distanceMeters: 25.2,
-      voiceInstruction: 'Head along the path',
-    ),
-    // node_001 → node_002 (19.3m)
-    CampusEdge(
-      fromId: 'node_001',
-      toId: 'node_002',
-      distanceMeters: 19.3,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_002 → node_003 (20.5m)
-    CampusEdge(
-      fromId: 'node_002',
-      toId: 'node_003',
-      distanceMeters: 20.5,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_003 → node_004 (22.5m)
-    CampusEdge(
-      fromId: 'node_003',
-      toId: 'node_004',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_004 → node_005 (21.2m)
-    CampusEdge(
-      fromId: 'node_004',
-      toId: 'node_005',
-      distanceMeters: 21.2,
-      voiceInstruction: null,
-    ),
-    // node_005 → node_006 (22.2m)
-    CampusEdge(
-      fromId: 'node_005',
-      toId: 'node_006',
-      distanceMeters: 22.2,
-      voiceInstruction: null,
-    ),
-    // node_006 → node_007 (21.3m)
-    CampusEdge(
-      fromId: 'node_006',
-      toId: 'node_007',
-      distanceMeters: 21.3,
-      voiceInstruction: null,
-    ),
-    // node_007 → node_008 (21.1m)
-    CampusEdge(
-      fromId: 'node_007',
-      toId: 'node_008',
-      distanceMeters: 21.1,
-      voiceInstruction: null,
-    ),
-    // node_008 → node_009 (21.4m)
-    CampusEdge(
-      fromId: 'node_008',
-      toId: 'node_009',
-      distanceMeters: 21.4,
-      voiceInstruction: null,
-    ),
-    // node_009 → node_010 (21.7m)
-    CampusEdge(
-      fromId: 'node_009',
-      toId: 'node_010',
-      distanceMeters: 21.7,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_010 → node_011 (23.0m)
-    CampusEdge(
-      fromId: 'node_010',
-      toId: 'node_011',
-      distanceMeters: 23.0,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_011 → node_012 (22.4m)
-    CampusEdge(
-      fromId: 'node_011',
-      toId: 'node_012',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_012 → node_013 (21.8m)
-    CampusEdge(
-      fromId: 'node_012',
-      toId: 'node_013',
-      distanceMeters: 21.8,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_013 → node_014 (21.8m)
-    CampusEdge(
-      fromId: 'node_013',
-      toId: 'node_014',
-      distanceMeters: 21.8,
-      voiceInstruction: null,
-    ),
-    // node_014 → node_015 (23.8m)
-    CampusEdge(
-      fromId: 'node_014',
-      toId: 'node_015',
-      distanceMeters: 23.8,
-      voiceInstruction: null,
-    ),
-    // node_015 → node_016 (22.1m)
-    CampusEdge(
-      fromId: 'node_015',
-      toId: 'node_016',
-      distanceMeters: 22.1,
-      voiceInstruction: null,
-    ),
-    // node_016 → node_017 (21.1m)
-    CampusEdge(
-      fromId: 'node_016',
-      toId: 'node_017',
-      distanceMeters: 21.1,
-      voiceInstruction: null,
-    ),
-    // node_017 → node_018 (18.1m)
-    CampusEdge(
-      fromId: 'node_017',
-      toId: 'node_018',
-      distanceMeters: 18.1,
-      voiceInstruction: null,
-    ),
-    // node_018 → node_019 (23.0m)
-    CampusEdge(
-      fromId: 'node_018',
-      toId: 'node_019',
-      distanceMeters: 23.0,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_019 → node_020 (22.7m)
-    CampusEdge(
-      fromId: 'node_019',
-      toId: 'node_020',
-      distanceMeters: 22.7,
-      voiceInstruction: null,
-    ),
-    // node_020 → node_021 (4.7m)
-    CampusEdge(
-      fromId: 'node_020',
-      toId: 'node_021',
-      distanceMeters: 4.7,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_021 → node_022 (24.2m)
-    CampusEdge(
-      fromId: 'node_021',
-      toId: 'node_022',
-      distanceMeters: 24.2,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_022 → node_023 (21.4m)
-    CampusEdge(
-      fromId: 'node_022',
-      toId: 'node_023',
-      distanceMeters: 21.4,
-      voiceInstruction: null,
-    ),
-    // node_023 → node_024 (17.0m)
-    CampusEdge(
-      fromId: 'node_023',
-      toId: 'node_024',
-      distanceMeters: 17.0,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_024 → node_025 (23.0m)
-    CampusEdge(
-      fromId: 'node_024',
-      toId: 'node_025',
-      distanceMeters: 23.0,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_025 → node_026 (22.0m)
-    CampusEdge(
-      fromId: 'node_025',
-      toId: 'node_026',
-      distanceMeters: 22.0,
-      voiceInstruction: null,
-    ),
-    // node_026 → node_027 (22.8m)
-    CampusEdge(
-      fromId: 'node_026',
-      toId: 'node_027',
-      distanceMeters: 22.8,
-      voiceInstruction: null,
-    ),
-    // node_027 → node_028 (22.5m)
-    CampusEdge(
-      fromId: 'node_027',
-      toId: 'node_028',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_028 → node_029 (22.3m)
-    CampusEdge(
-      fromId: 'node_028',
-      toId: 'node_029',
-      distanceMeters: 22.3,
-      voiceInstruction: null,
-    ),
-    // node_029 → node_030 (22.7m)
-    CampusEdge(
-      fromId: 'node_029',
-      toId: 'node_030',
-      distanceMeters: 22.7,
-      voiceInstruction: null,
-    ),
-    // node_030 → node_031 (21.9m)
-    CampusEdge(
-      fromId: 'node_030',
-      toId: 'node_031',
-      distanceMeters: 21.9,
-      voiceInstruction: null,
-    ),
-    // node_031 → node_032 (22.6m)
-    CampusEdge(
-      fromId: 'node_031',
-      toId: 'node_032',
-      distanceMeters: 22.6,
-      voiceInstruction: null,
-    ),
-    // node_032 → node_033 (18.7m)
-    CampusEdge(
-      fromId: 'node_032',
-      toId: 'node_033',
-      distanceMeters: 18.7,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_033 → node_034 (22.7m)
-    CampusEdge(
-      fromId: 'node_033',
-      toId: 'node_034',
-      distanceMeters: 22.7,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_034 → node_035 (23.3m)
-    CampusEdge(
-      fromId: 'node_034',
-      toId: 'node_035',
-      distanceMeters: 23.3,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_035 → node_036 (18.8m)
-    CampusEdge(
-      fromId: 'node_035',
-      toId: 'node_036',
-      distanceMeters: 18.8,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_036 → node_037 (22.2m)
-    CampusEdge(
-      fromId: 'node_036',
-      toId: 'node_037',
-      distanceMeters: 22.2,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_037 → node_038 (3.1m)
-    CampusEdge(
-      fromId: 'node_037',
-      toId: 'node_038',
-      distanceMeters: 3.1,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_038 → node_039 (22.5m)
-    CampusEdge(
-      fromId: 'node_038',
-      toId: 'node_039',
-      distanceMeters: 22.5,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_039 → node_040 (9.5m)
-    CampusEdge(
-      fromId: 'node_039',
-      toId: 'node_040',
-      distanceMeters: 9.5,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_040 → node_041 (17.4m)
-    CampusEdge(
-      fromId: 'node_040',
-      toId: 'node_041',
-      distanceMeters: 17.4,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_041 → node_042 (22.1m)
-    CampusEdge(
-      fromId: 'node_041',
-      toId: 'node_042',
-      distanceMeters: 22.1,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_042 → node_043 (22.0m)
-    CampusEdge(
-      fromId: 'node_042',
-      toId: 'node_043',
-      distanceMeters: 22.0,
-      voiceInstruction: null,
-    ),
-    // node_043 → node_044 (21.3m)
-    CampusEdge(
-      fromId: 'node_043',
-      toId: 'node_044',
-      distanceMeters: 21.3,
-      voiceInstruction: null,
-    ),
-    // node_044 → node_045 (21.6m)
-    CampusEdge(
-      fromId: 'node_044',
-      toId: 'node_045',
-      distanceMeters: 21.6,
-      voiceInstruction: null,
-    ),
-    // node_045 → node_046 (11.1m)
-    CampusEdge(
-      fromId: 'node_045',
-      toId: 'node_046',
-      distanceMeters: 11.1,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_046 → node_047 (22.5m)
-    CampusEdge(
-      fromId: 'node_046',
-      toId: 'node_047',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_047 → node_048 (20.6m)
-    CampusEdge(
-      fromId: 'node_047',
-      toId: 'node_048',
-      distanceMeters: 20.6,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_048 → node_049 (18.7m)
-    CampusEdge(
-      fromId: 'node_048',
-      toId: 'node_049',
-      distanceMeters: 18.7,
-      voiceInstruction: null,
-    ),
-    // node_049 → node_050 (22.4m)
-    CampusEdge(
-      fromId: 'node_049',
-      toId: 'node_050',
-      distanceMeters: 22.4,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_050 → node_051 (64.1m)
-    CampusEdge(
-      fromId: 'node_050',
-      toId: 'node_051',
-      distanceMeters: 64.1,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_051 → node_052 (2.9m)
-    CampusEdge(
-      fromId: 'node_051',
-      toId: 'node_052',
-      distanceMeters: 2.9,
-      voiceInstruction: null,
-    ),
-    // node_052 → node_053 (22.1m)
-    CampusEdge(
-      fromId: 'node_052',
-      toId: 'node_053',
-      distanceMeters: 22.1,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_053 → node_054 (22.3m)
-    CampusEdge(
-      fromId: 'node_053',
-      toId: 'node_054',
-      distanceMeters: 22.3,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_054 → node_055 (22.3m)
-    CampusEdge(
-      fromId: 'node_054',
-      toId: 'node_055',
-      distanceMeters: 22.3,
-      voiceInstruction: null,
-    ),
-    // node_055 → node_056 (23.1m)
-    CampusEdge(
-      fromId: 'node_055',
-      toId: 'node_056',
-      distanceMeters: 23.1,
-      voiceInstruction: null,
-    ),
-    // node_056 → node_057 (20.8m)
-    CampusEdge(
-      fromId: 'node_056',
-      toId: 'node_057',
-      distanceMeters: 20.8,
-      voiceInstruction: null,
-    ),
-    // node_057 → node_058 (22.4m)
-    CampusEdge(
-      fromId: 'node_057',
-      toId: 'node_058',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_058 → node_059 (22.0m)
-    CampusEdge(
-      fromId: 'node_058',
-      toId: 'node_059',
-      distanceMeters: 22.0,
-      voiceInstruction: null,
-    ),
-    // node_059 → node_060 (22.1m)
-    CampusEdge(
-      fromId: 'node_059',
-      toId: 'node_060',
-      distanceMeters: 22.1,
-      voiceInstruction: null,
-    ),
-    // node_060 → node_061 (21.6m)
-    CampusEdge(
-      fromId: 'node_060',
-      toId: 'node_061',
-      distanceMeters: 21.6,
-      voiceInstruction: null,
-    ),
-    // node_061 → node_062 (21.9m)
-    CampusEdge(
-      fromId: 'node_061',
-      toId: 'node_062',
-      distanceMeters: 21.9,
-      voiceInstruction: null,
-    ),
-    // node_062 → node_063 (22.1m)
-    CampusEdge(
-      fromId: 'node_062',
-      toId: 'node_063',
-      distanceMeters: 22.1,
-      voiceInstruction: null,
-    ),
-    // node_063 → node_064 (21.9m)
-    CampusEdge(
-      fromId: 'node_063',
-      toId: 'node_064',
-      distanceMeters: 21.9,
-      voiceInstruction: null,
-    ),
-    // node_064 → node_065 (22.2m)
-    CampusEdge(
-      fromId: 'node_064',
-      toId: 'node_065',
-      distanceMeters: 22.2,
-      voiceInstruction: null,
-    ),
-    // node_065 → node_066 (21.2m)
-    CampusEdge(
-      fromId: 'node_065',
-      toId: 'node_066',
-      distanceMeters: 21.2,
-      voiceInstruction: null,
-    ),
-    // node_066 → node_067 (23.3m)
-    CampusEdge(
-      fromId: 'node_066',
-      toId: 'node_067',
-      distanceMeters: 23.3,
-      voiceInstruction: null,
-    ),
-    // node_067 → node_068 (21.9m)
-    CampusEdge(
-      fromId: 'node_067',
-      toId: 'node_068',
-      distanceMeters: 21.9,
-      voiceInstruction: null,
-    ),
-    // node_068 → node_069 (22.5m)
-    CampusEdge(
-      fromId: 'node_068',
-      toId: 'node_069',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_069 → node_070 (21.3m)
-    CampusEdge(
-      fromId: 'node_069',
-      toId: 'node_070',
-      distanceMeters: 21.3,
-      voiceInstruction: null,
-    ),
-    // node_070 → node_071 (22.6m)
-    CampusEdge(
-      fromId: 'node_070',
-      toId: 'node_071',
-      distanceMeters: 22.6,
-      voiceInstruction: null,
-    ),
-    // node_071 → node_072 (21.1m)
-    CampusEdge(
-      fromId: 'node_071',
-      toId: 'node_072',
-      distanceMeters: 21.1,
-      voiceInstruction: null,
-    ),
-    // node_072 → node_073 (21.9m)
-    CampusEdge(
-      fromId: 'node_072',
-      toId: 'node_073',
-      distanceMeters: 21.9,
-      voiceInstruction: null,
-    ),
-    // node_073 → node_074 (21.6m)
-    CampusEdge(
-      fromId: 'node_073',
-      toId: 'node_074',
-      distanceMeters: 21.6,
-      voiceInstruction: null,
-    ),
-    // node_074 → node_075 (23.7m)
-    CampusEdge(
-      fromId: 'node_074',
-      toId: 'node_075',
-      distanceMeters: 23.7,
-      voiceInstruction: null,
-    ),
-    // node_075 → node_076 (9.8m)
-    CampusEdge(
-      fromId: 'node_075',
-      toId: 'node_076',
-      distanceMeters: 9.8,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_076 → node_077 (25.6m)
-    CampusEdge(
-      fromId: 'node_076',
-      toId: 'node_077',
-      distanceMeters: 25.6,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_077 → node_078 (22.5m)
-    CampusEdge(
-      fromId: 'node_077',
-      toId: 'node_078',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_078 → node_079 (20.7m)
-    CampusEdge(
-      fromId: 'node_078',
-      toId: 'node_079',
-      distanceMeters: 20.7,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_079 → node_080 (23.5m)
-    CampusEdge(
-      fromId: 'node_079',
-      toId: 'node_080',
-      distanceMeters: 23.5,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_080 → node_081 (21.8m)
-    CampusEdge(
-      fromId: 'node_080',
-      toId: 'node_081',
-      distanceMeters: 21.8,
-      voiceInstruction: null,
-    ),
-    // node_081 → node_082 (19.1m)
-    CampusEdge(
-      fromId: 'node_081',
-      toId: 'node_082',
-      distanceMeters: 19.1,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_082 → node_083 (18.7m)
-    CampusEdge(
-      fromId: 'node_082',
-      toId: 'node_083',
-      distanceMeters: 18.7,
-      voiceInstruction: null,
-    ),
-    // node_083 → node_084 (13.3m)
-    CampusEdge(
-      fromId: 'node_083',
-      toId: 'node_084',
-      distanceMeters: 13.3,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_084 → node_085 (19.1m)
-    CampusEdge(
-      fromId: 'node_084',
-      toId: 'node_085',
-      distanceMeters: 19.1,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_085 → node_086 (20.2m)
-    CampusEdge(
-      fromId: 'node_085',
-      toId: 'node_086',
-      distanceMeters: 20.2,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_086 → node_087 (24.5m)
-    CampusEdge(
-      fromId: 'node_086',
-      toId: 'node_087',
-      distanceMeters: 24.5,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_087 → node_088 (22.3m)
-    CampusEdge(
-      fromId: 'node_087',
-      toId: 'node_088',
-      distanceMeters: 22.3,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_088 → node_089 (22.5m)
-    CampusEdge(
-      fromId: 'node_088',
-      toId: 'node_089',
-      distanceMeters: 22.5,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_089 → node_090 (22.2m)
-    CampusEdge(
-      fromId: 'node_089',
-      toId: 'node_090',
-      distanceMeters: 22.2,
-      voiceInstruction: null,
-    ),
-    // node_090 → node_091 (19.1m)
-    CampusEdge(
-      fromId: 'node_090',
-      toId: 'node_091',
-      distanceMeters: 19.1,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_091 → node_092 (21.4m)
-    CampusEdge(
-      fromId: 'node_091',
-      toId: 'node_092',
-      distanceMeters: 21.4,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_092 → node_093 (22.3m)
-    CampusEdge(
-      fromId: 'node_092',
-      toId: 'node_093',
-      distanceMeters: 22.3,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_093 → node_094 (54.1m)
-    CampusEdge(
-      fromId: 'node_093',
-      toId: 'node_094',
-      distanceMeters: 54.1,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_094 → node_095 (20.8m)
-    CampusEdge(
-      fromId: 'node_094',
-      toId: 'node_095',
-      distanceMeters: 20.8,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_095 → node_096 (4.0m)
-    CampusEdge(
-      fromId: 'node_095',
-      toId: 'node_096',
-      distanceMeters: 4.0,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_096 → node_097 (21.2m)
-    CampusEdge(
-      fromId: 'node_096',
-      toId: 'node_097',
-      distanceMeters: 21.2,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_097 → node_098 (23.7m)
-    CampusEdge(
-      fromId: 'node_097',
-      toId: 'node_098',
-      distanceMeters: 23.7,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_098 → node_099 (22.4m)
-    CampusEdge(
-      fromId: 'node_098',
-      toId: 'node_099',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_099 → node_100 (20.1m)
-    CampusEdge(
-      fromId: 'node_099',
-      toId: 'node_100',
-      distanceMeters: 20.1,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_100 → node_101 (22.6m)
-    CampusEdge(
-      fromId: 'node_100',
-      toId: 'node_101',
-      distanceMeters: 22.6,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_101 → node_102 (23.8m)
-    CampusEdge(
-      fromId: 'node_101',
-      toId: 'node_102',
-      distanceMeters: 23.8,
-      voiceInstruction: null,
-    ),
-    // node_102 → node_103 (21.6m)
-    CampusEdge(
-      fromId: 'node_102',
-      toId: 'node_103',
-      distanceMeters: 21.6,
-      voiceInstruction: null,
-    ),
-    // node_103 → node_104 (24.2m)
-    CampusEdge(
-      fromId: 'node_103',
-      toId: 'node_104',
-      distanceMeters: 24.2,
-      voiceInstruction: null,
-    ),
-    // node_104 → node_105 (22.3m)
-    CampusEdge(
-      fromId: 'node_104',
-      toId: 'node_105',
-      distanceMeters: 22.3,
-      voiceInstruction: null,
-    ),
-    // node_105 → node_106 (23.5m)
-    CampusEdge(
-      fromId: 'node_105',
-      toId: 'node_106',
-      distanceMeters: 23.5,
-      voiceInstruction: null,
-    ),
-    // node_106 → node_107 (23.2m)
-    CampusEdge(
-      fromId: 'node_106',
-      toId: 'node_107',
-      distanceMeters: 23.2,
-      voiceInstruction: null,
-    ),
-    // node_107 → node_108 (23.2m)
-    CampusEdge(
-      fromId: 'node_107',
-      toId: 'node_108',
-      distanceMeters: 23.2,
-      voiceInstruction: null,
-    ),
-    // node_108 → node_109 (23.9m)
-    CampusEdge(
-      fromId: 'node_108',
-      toId: 'node_109',
-      distanceMeters: 23.9,
-      voiceInstruction: null,
-    ),
-    // node_109 → node_110 (23.5m)
-    CampusEdge(
-      fromId: 'node_109',
-      toId: 'node_110',
-      distanceMeters: 23.5,
-      voiceInstruction: null,
-    ),
-    // node_110 → node_111 (22.2m)
-    CampusEdge(
-      fromId: 'node_110',
-      toId: 'node_111',
-      distanceMeters: 22.2,
-      voiceInstruction: null,
-    ),
-    // node_111 → node_112 (24.0m)
-    CampusEdge(
-      fromId: 'node_111',
-      toId: 'node_112',
-      distanceMeters: 24.0,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_112 → node_113 (22.6m)
-    CampusEdge(
-      fromId: 'node_112',
-      toId: 'node_113',
-      distanceMeters: 22.6,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_113 → node_114 (23.0m)
-    CampusEdge(
-      fromId: 'node_113',
-      toId: 'node_114',
-      distanceMeters: 23.0,
-      voiceInstruction: null,
-    ),
-    // node_114 → node_115 (22.3m)
-    CampusEdge(
-      fromId: 'node_114',
-      toId: 'node_115',
-      distanceMeters: 22.3,
-      voiceInstruction: null,
-    ),
-    // node_115 → node_116 (24.0m)
-    CampusEdge(
-      fromId: 'node_115',
-      toId: 'node_116',
-      distanceMeters: 24.0,
-      voiceInstruction: null,
-    ),
-    // node_116 → node_117 (22.5m)
-    CampusEdge(
-      fromId: 'node_116',
-      toId: 'node_117',
-      distanceMeters: 22.5,
-      voiceInstruction: null,
-    ),
-    // node_117 → node_118 (23.5m)
-    CampusEdge(
-      fromId: 'node_117',
-      toId: 'node_118',
-      distanceMeters: 23.5,
-      voiceInstruction: null,
-    ),
-    // node_118 → node_119 (22.8m)
-    CampusEdge(
-      fromId: 'node_118',
-      toId: 'node_119',
-      distanceMeters: 22.8,
-      voiceInstruction: null,
-    ),
-    // node_119 → node_120 (19.8m)
-    CampusEdge(
-      fromId: 'node_119',
-      toId: 'node_120',
-      distanceMeters: 19.8,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_120 → node_121 (22.7m)
-    CampusEdge(
-      fromId: 'node_120',
-      toId: 'node_121',
-      distanceMeters: 22.7,
-      voiceInstruction: null,
-    ),
-    // node_121 → node_122 (22.0m)
-    CampusEdge(
-      fromId: 'node_121',
-      toId: 'node_122',
-      distanceMeters: 22.0,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_122 → node_123 (22.4m)
-    CampusEdge(
-      fromId: 'node_122',
-      toId: 'node_123',
-      distanceMeters: 22.4,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_123 → node_124 (22.0m)
-    CampusEdge(
-      fromId: 'node_123',
-      toId: 'node_124',
-      distanceMeters: 22.0,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_124 → node_125 (22.3m)
-    CampusEdge(
-      fromId: 'node_124',
-      toId: 'node_125',
-      distanceMeters: 22.3,
-      voiceInstruction: null,
-    ),
-    // node_125 → node_126 (99.4m)
-    CampusEdge(
-      fromId: 'node_125',
-      toId: 'node_126',
-      distanceMeters: 99.4,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_126 → node_127 (22.2m)
-    CampusEdge(
-      fromId: 'node_126',
-      toId: 'node_127',
-      distanceMeters: 22.2,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_127 → node_128 (23.3m)
-    CampusEdge(
-      fromId: 'node_127',
-      toId: 'node_128',
-      distanceMeters: 23.3,
-      voiceInstruction: null,
-    ),
-    // node_128 → node_129 (22.8m)
-    CampusEdge(
-      fromId: 'node_128',
-      toId: 'node_129',
-      distanceMeters: 22.8,
-      voiceInstruction: null,
-    ),
-    // node_129 → node_130 (22.6m)
-    CampusEdge(
-      fromId: 'node_129',
-      toId: 'node_130',
-      distanceMeters: 22.6,
-      voiceInstruction: null,
-    ),
-    // node_130 → node_131 (22.4m)
-    CampusEdge(
-      fromId: 'node_130',
-      toId: 'node_131',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_131 → node_132 (20.9m)
-    CampusEdge(
-      fromId: 'node_131',
-      toId: 'node_132',
-      distanceMeters: 20.9,
-      voiceInstruction: null,
-    ),
-    // node_132 → node_133 (19.9m)
-    CampusEdge(
-      fromId: 'node_132',
-      toId: 'node_133',
-      distanceMeters: 19.9,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_133 → node_134 (22.9m)
-    CampusEdge(
-      fromId: 'node_133',
-      toId: 'node_134',
-      distanceMeters: 22.9,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_134 → node_135 (22.4m)
-    CampusEdge(
-      fromId: 'node_134',
-      toId: 'node_135',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_135 → node_136 (22.4m)
-    CampusEdge(
-      fromId: 'node_135',
-      toId: 'node_136',
-      distanceMeters: 22.4,
-      voiceInstruction: null,
-    ),
-    // node_136 → node_137 (22.0m)
-    CampusEdge(
-      fromId: 'node_136',
-      toId: 'node_137',
-      distanceMeters: 22.0,
-      voiceInstruction: null,
-    ),
-    // node_137 → node_138 (21.4m)
-    CampusEdge(
-      fromId: 'node_137',
-      toId: 'node_138',
-      distanceMeters: 21.4,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_138 → node_139 (63.1m)
-    CampusEdge(
-      fromId: 'node_138',
-      toId: 'node_139',
-      distanceMeters: 63.1,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_139 → node_140 (21.7m)
-    CampusEdge(
-      fromId: 'node_139',
-      toId: 'node_140',
-      distanceMeters: 21.7,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_140 → node_141 (22.6m)
-    CampusEdge(
-      fromId: 'node_140',
-      toId: 'node_141',
-      distanceMeters: 22.6,
-      voiceInstruction: null,
-    ),
-    // node_141 → node_142 (22.3m)
-    CampusEdge(
-      fromId: 'node_141',
-      toId: 'node_142',
-      distanceMeters: 22.3,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_142 → node_143 (20.8m)
-    CampusEdge(
-      fromId: 'node_142',
-      toId: 'node_143',
-      distanceMeters: 20.8,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_143 → node_144 (7.5m)
-    CampusEdge(
-      fromId: 'node_143',
-      toId: 'node_144',
-      distanceMeters: 7.5,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_144 → node_145 (22.6m)
-    CampusEdge(
-      fromId: 'node_144',
-      toId: 'node_145',
-      distanceMeters: 22.6,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_145 → node_146 (23.1m)
-    CampusEdge(
-      fromId: 'node_145',
-      toId: 'node_146',
-      distanceMeters: 23.1,
-      voiceInstruction: null,
-    ),
-    // node_146 → node_147 (17.3m)
-    CampusEdge(
-      fromId: 'node_146',
-      toId: 'node_147',
-      distanceMeters: 17.3,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_147 → node_148 (23.7m)
-    CampusEdge(
-      fromId: 'node_147',
-      toId: 'node_148',
-      distanceMeters: 23.7,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_148 → node_149 (22.3m)
-    CampusEdge(
-      fromId: 'node_148',
-      toId: 'node_149',
-      distanceMeters: 22.3,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_149 → node_150 (22.0m)
-    CampusEdge(
-      fromId: 'node_149',
-      toId: 'node_150',
-      distanceMeters: 22.0,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_150 → node_151 (21.3m)
-    CampusEdge(
-      fromId: 'node_150',
-      toId: 'node_151',
-      distanceMeters: 21.3,
-      voiceInstruction: null,
-    ),
-    // node_151 → node_152 (15.0m)
-    CampusEdge(
-      fromId: 'node_151',
-      toId: 'node_152',
-      distanceMeters: 15.0,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_152 → node_153 (19.6m)
-    CampusEdge(
-      fromId: 'node_152',
-      toId: 'node_153',
-      distanceMeters: 19.6,
-      voiceInstruction: 'Turn left',
-    ),
-    // node_153 → node_154 (22.0m)
-    CampusEdge(
-      fromId: 'node_153',
-      toId: 'node_154',
-      distanceMeters: 22.0,
-      voiceInstruction: null,
-    ),
-    // node_154 → node_155 (21.2m)
-    CampusEdge(
-      fromId: 'node_154',
-      toId: 'node_155',
-      distanceMeters: 21.2,
-      voiceInstruction: null,
-    ),
-    // node_155 → node_156 (17.3m)
-    CampusEdge(
-      fromId: 'node_155',
-      toId: 'node_156',
-      distanceMeters: 17.3,
-      voiceInstruction: 'Turn right',
-    ),
-    // node_156 → node_157 (20.1m)
-    CampusEdge(
-      fromId: 'node_156',
-      toId: 'node_157',
-      distanceMeters: 20.1,
-      voiceInstruction: 'Bear right',
-    ),
-    // node_157 → node_158 (22.1m)
-    CampusEdge(
-      fromId: 'node_157',
-      toId: 'node_158',
-      distanceMeters: 22.1,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_158 → node_159 (21.3m)
-    CampusEdge(
-      fromId: 'node_158',
-      toId: 'node_159',
-      distanceMeters: 21.3,
-      voiceInstruction: null,
-    ),
-    // node_159 → node_160 (22.9m)
-    CampusEdge(
-      fromId: 'node_159',
-      toId: 'node_160',
-      distanceMeters: 22.9,
-      voiceInstruction: null,
-    ),
-    // node_160 → node_161 (22.8m)
-    CampusEdge(
-      fromId: 'node_160',
-      toId: 'node_161',
-      distanceMeters: 22.8,
-      voiceInstruction: 'Bear left',
-    ),
-    // node_161 → node_162 (21.1m)
-    CampusEdge(
-      fromId: 'node_161',
-      toId: 'node_162',
-      distanceMeters: 21.1,
-      voiceInstruction: null,
-    ),
-    // node_162 → node_163 (21.4m)
-    CampusEdge(
-      fromId: 'node_162',
-      toId: 'node_163',
-      distanceMeters: 21.4,
-      voiceInstruction: null,
-    ),
-    // Junction connection: node_001 <-> node_114 (7.1m)
-    CampusEdge(fromId: 'node_001', toId: 'node_114', distanceMeters: 7.1, voiceInstruction: null),
-    // Junction connection: node_002 <-> node_113 (7.0m)
-    CampusEdge(fromId: 'node_002', toId: 'node_113', distanceMeters: 7.0, voiceInstruction: null),
-    // Junction connection: node_003 <-> node_112 (10.0m)
-    CampusEdge(fromId: 'node_003', toId: 'node_112', distanceMeters: 10.0, voiceInstruction: null),
-    // Junction connection: node_008 <-> node_108 (9.1m)
-    CampusEdge(fromId: 'node_008', toId: 'node_108', distanceMeters: 9.1, voiceInstruction: null),
-    // Junction connection: node_009 <-> node_107 (7.9m)
-    CampusEdge(fromId: 'node_009', toId: 'node_107', distanceMeters: 7.9, voiceInstruction: null),
-    // Junction connection: node_018 <-> node_023 (2.1m)
-    CampusEdge(fromId: 'node_018', toId: 'node_023', distanceMeters: 2.1, voiceInstruction: null),
-    // Junction connection: node_019 <-> node_022 (4.1m)
-    CampusEdge(fromId: 'node_019', toId: 'node_022', distanceMeters: 4.1, voiceInstruction: null),
-    // Junction connection: node_024 <-> node_061 (5.2m)
-    CampusEdge(fromId: 'node_024', toId: 'node_061', distanceMeters: 5.2, voiceInstruction: null),
-    // Junction connection: node_025 <-> node_060 (5.3m)
-    CampusEdge(fromId: 'node_025', toId: 'node_060', distanceMeters: 5.3, voiceInstruction: null),
-    // Junction connection: node_026 <-> node_059 (5.1m)
-    CampusEdge(fromId: 'node_026', toId: 'node_059', distanceMeters: 5.1, voiceInstruction: null),
-    // Junction connection: node_027 <-> node_058 (5.6m)
-    CampusEdge(fromId: 'node_027', toId: 'node_058', distanceMeters: 5.6, voiceInstruction: null),
-    // Junction connection: node_028 <-> node_057 (5.1m)
-    CampusEdge(fromId: 'node_028', toId: 'node_057', distanceMeters: 5.1, voiceInstruction: null),
-    // Junction connection: node_029 <-> node_056 (6.6m)
-    CampusEdge(fromId: 'node_029', toId: 'node_056', distanceMeters: 6.6, voiceInstruction: null),
-    // Junction connection: node_030 <-> node_055 (6.3m)
-    CampusEdge(fromId: 'node_030', toId: 'node_055', distanceMeters: 6.3, voiceInstruction: null),
-    // Junction connection: node_031 <-> node_054 (5.9m)
-    CampusEdge(fromId: 'node_031', toId: 'node_054', distanceMeters: 5.9, voiceInstruction: null),
-    // Junction connection: node_032 <-> node_053 (6.2m)
-    CampusEdge(fromId: 'node_032', toId: 'node_053', distanceMeters: 6.2, voiceInstruction: null),
-    // Junction connection: node_033 <-> node_051 (1.4m)
-    CampusEdge(fromId: 'node_033', toId: 'node_051', distanceMeters: 1.4, voiceInstruction: null),
-    // Junction connection: node_033 <-> node_052 (2.9m)
-    CampusEdge(fromId: 'node_033', toId: 'node_052', distanceMeters: 2.9, voiceInstruction: null),
-    // Junction connection: node_036 <-> node_039 (1.7m)
-    CampusEdge(fromId: 'node_036', toId: 'node_039', distanceMeters: 1.7, voiceInstruction: null),
-    // Junction connection: node_036 <-> node_040 (8.2m)
-    CampusEdge(fromId: 'node_036', toId: 'node_040', distanceMeters: 8.2, voiceInstruction: null),
-    // Junction connection: node_036 <-> node_050 (5.4m)
-    CampusEdge(fromId: 'node_036', toId: 'node_050', distanceMeters: 5.4, voiceInstruction: null),
-    // Junction connection: node_037 <-> node_049 (5.3m)
-    CampusEdge(fromId: 'node_037', toId: 'node_049', distanceMeters: 5.3, voiceInstruction: null),
-    // Junction connection: node_038 <-> node_049 (4.2m)
-    CampusEdge(fromId: 'node_038', toId: 'node_049', distanceMeters: 4.2, voiceInstruction: null),
-    // Junction connection: node_039 <-> node_050 (3.8m)
-    CampusEdge(fromId: 'node_039', toId: 'node_050', distanceMeters: 3.8, voiceInstruction: null),
-    // Junction connection: node_043 <-> node_047 (9.5m)
-    CampusEdge(fromId: 'node_043', toId: 'node_047', distanceMeters: 9.5, voiceInstruction: null),
-    // Junction connection: node_044 <-> node_046 (10.7m)
-    CampusEdge(fromId: 'node_044', toId: 'node_046', distanceMeters: 10.7, voiceInstruction: null),
-    // Junction connection: node_070 <-> node_105 (6.7m)
-    CampusEdge(fromId: 'node_070', toId: 'node_105', distanceMeters: 6.7, voiceInstruction: null),
-    // Junction connection: node_078 <-> node_093 (10.7m)
-    CampusEdge(fromId: 'node_078', toId: 'node_093', distanceMeters: 10.7, voiceInstruction: null),
-    // Junction connection: node_082 <-> node_084 (5.4m)
-    CampusEdge(fromId: 'node_082', toId: 'node_084', distanceMeters: 5.4, voiceInstruction: null),
-    // Junction connection: node_091 <-> node_094 (11.0m)
-    CampusEdge(fromId: 'node_091', toId: 'node_094', distanceMeters: 11.0, voiceInstruction: null),
-    // Junction connection: node_091 <-> node_095 (9.9m)
-    CampusEdge(fromId: 'node_091', toId: 'node_095', distanceMeters: 9.9, voiceInstruction: null),
-    // Junction connection: node_091 <-> node_096 (6.8m)
-    CampusEdge(fromId: 'node_091', toId: 'node_096', distanceMeters: 6.8, voiceInstruction: null),
-    // Junction connection: node_092 <-> node_095 (11.7m)
-    CampusEdge(fromId: 'node_092', toId: 'node_095', distanceMeters: 11.7, voiceInstruction: null),
-    // Junction connection: node_094 <-> node_097 (3.6m)
-    CampusEdge(fromId: 'node_094', toId: 'node_097', distanceMeters: 3.6, voiceInstruction: null),
-    // Junction connection: node_119 <-> node_127 (11.5m)
-    CampusEdge(fromId: 'node_119', toId: 'node_127', distanceMeters: 11.5, voiceInstruction: null),
-    // Junction connection: node_120 <-> node_126 (9.7m)
-    CampusEdge(fromId: 'node_120', toId: 'node_126', distanceMeters: 9.7, voiceInstruction: null),
-    // Junction connection: node_132 <-> node_160 (7.0m)
-    CampusEdge(fromId: 'node_132', toId: 'node_160', distanceMeters: 7.0, voiceInstruction: null),
-    // Junction connection: node_137 <-> node_141 (11.8m)
-    CampusEdge(fromId: 'node_137', toId: 'node_141', distanceMeters: 11.8, voiceInstruction: null),
-    // Junction connection: node_137 <-> node_142 (11.0m)
-    CampusEdge(fromId: 'node_137', toId: 'node_142', distanceMeters: 11.0, voiceInstruction: null),
-    // Junction connection: node_148 <-> node_155 (8.0m)
-    CampusEdge(fromId: 'node_148', toId: 'node_155', distanceMeters: 8.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_000', toId: 'node_001', distanceMeters: 25.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_001', toId: 'node_002', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_002', toId: 'node_003', distanceMeters: 21.4, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_003', toId: 'node_004', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_004', toId: 'node_005', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_005', toId: 'node_006', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_006', toId: 'node_007', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_007', toId: 'node_008', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_008', toId: 'node_009', distanceMeters: 21.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_009', toId: 'node_010', distanceMeters: 21.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_010', toId: 'node_011', distanceMeters: 21.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_011', toId: 'node_012', distanceMeters: 12.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_012', toId: 'node_013', distanceMeters: 23.1, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_013', toId: 'node_014', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_014', toId: 'node_015', distanceMeters: 16.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_015', toId: 'node_016', distanceMeters: 23.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_016', toId: 'node_017', distanceMeters: 21.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_017', toId: 'node_018', distanceMeters: 23.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_018', toId: 'node_019', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_019', toId: 'node_020', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_020', toId: 'node_021', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_021', toId: 'node_022', distanceMeters: 17.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_022', toId: 'node_023', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_023', toId: 'node_024', distanceMeters: 17.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_024', toId: 'node_025', distanceMeters: 8.3, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_025', toId: 'node_026', distanceMeters: 24.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_026', toId: 'node_027', distanceMeters: 21.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_027', toId: 'node_028', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_028', toId: 'node_029', distanceMeters: 22.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_029', toId: 'node_030', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_030', toId: 'node_031', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_031', toId: 'node_032', distanceMeters: 22.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_032', toId: 'node_033', distanceMeters: 17.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_033', toId: 'node_034', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_034', toId: 'node_035', distanceMeters: 22.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_035', toId: 'node_036', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_036', toId: 'node_037', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_037', toId: 'node_038', distanceMeters: 16.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_039', distanceMeters: 22.8, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_039', toId: 'node_040', distanceMeters: 22.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_040', toId: 'node_041', distanceMeters: 21.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_041', toId: 'node_042', distanceMeters: 16.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_042', toId: 'node_043', distanceMeters: 17.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_043', toId: 'node_044', distanceMeters: 15.3, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_044', toId: 'node_045', distanceMeters: 17.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_045', toId: 'node_046', distanceMeters: 11.5, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_046', toId: 'node_047', distanceMeters: 21.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_047', toId: 'node_048', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_048', toId: 'node_049', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_049', toId: 'node_050', distanceMeters: 20.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_050', toId: 'node_051', distanceMeters: 12.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_051', toId: 'node_052', distanceMeters: 15.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_052', toId: 'node_053', distanceMeters: 11.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_053', toId: 'node_054', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_054', toId: 'node_055', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_055', toId: 'node_056', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_056', toId: 'node_057', distanceMeters: 22.8, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_057', toId: 'node_058', distanceMeters: 10.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_058', toId: 'node_059', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_059', toId: 'node_060', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_060', toId: 'node_061', distanceMeters: 64.1, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_061', toId: 'node_062', distanceMeters: 23.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_062', toId: 'node_063', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_063', toId: 'node_064', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_064', toId: 'node_065', distanceMeters: 24.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_065', toId: 'node_066', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_066', toId: 'node_067', distanceMeters: 10.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_067', toId: 'node_068', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_068', toId: 'node_069', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_069', toId: 'node_070', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_070', toId: 'node_071', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_071', toId: 'node_072', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_072', toId: 'node_073', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_073', toId: 'node_074', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_074', toId: 'node_075', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_075', toId: 'node_076', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_076', toId: 'node_077', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_077', toId: 'node_078', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_078', toId: 'node_079', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_079', toId: 'node_080', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_080', toId: 'node_081', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_081', toId: 'node_082', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_082', toId: 'node_083', distanceMeters: 10.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_083', toId: 'node_084', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_084', toId: 'node_085', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_085', toId: 'node_086', distanceMeters: 17.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_086', toId: 'node_087', distanceMeters: 16.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_087', toId: 'node_088', distanceMeters: 25.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_088', toId: 'node_089', distanceMeters: 25.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_089', toId: 'node_090', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_090', toId: 'node_091', distanceMeters: 16.1, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_091', toId: 'node_092', distanceMeters: 23.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_092', toId: 'node_093', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_093', toId: 'node_094', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_094', toId: 'node_095', distanceMeters: 21.9, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_095', toId: 'node_096', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_096', toId: 'node_097', distanceMeters: 11.8, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_097', toId: 'node_098', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_098', toId: 'node_099', distanceMeters: 20.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_099', toId: 'node_100', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_100', toId: 'node_101', distanceMeters: 12.4, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_101', toId: 'node_102', distanceMeters: 12.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_102', toId: 'node_103', distanceMeters: 22.3, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_103', toId: 'node_104', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_104', toId: 'node_105', distanceMeters: 23.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_105', toId: 'node_106', distanceMeters: 21.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_106', toId: 'node_107', distanceMeters: 20.4, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_107', toId: 'node_108', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_108', toId: 'node_109', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_109', toId: 'node_110', distanceMeters: 64.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_110', toId: 'node_111', distanceMeters: 15.6, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_111', toId: 'node_112', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_112', toId: 'node_113', distanceMeters: 8.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_113', toId: 'node_114', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_114', toId: 'node_115', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_115', toId: 'node_116', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_116', toId: 'node_117', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_117', toId: 'node_118', distanceMeters: 11.6, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_118', toId: 'node_119', distanceMeters: 25.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_119', toId: 'node_120', distanceMeters: 23.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_120', toId: 'node_121', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_121', toId: 'node_122', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_122', toId: 'node_123', distanceMeters: 18.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_123', toId: 'node_124', distanceMeters: 16.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_124', toId: 'node_125', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_125', toId: 'node_126', distanceMeters: 23.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_126', toId: 'node_127', distanceMeters: 23.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_127', toId: 'node_128', distanceMeters: 23.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_128', toId: 'node_129', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_129', toId: 'node_130', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_130', toId: 'node_131', distanceMeters: 24.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_131', toId: 'node_132', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_132', toId: 'node_133', distanceMeters: 23.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_133', toId: 'node_134', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_134', toId: 'node_135', distanceMeters: 24.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_135', toId: 'node_136', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_136', toId: 'node_137', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_137', toId: 'node_138', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_138', toId: 'node_139', distanceMeters: 19.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_139', toId: 'node_140', distanceMeters: 22.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_141', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_141', toId: 'node_142', distanceMeters: 15.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_142', toId: 'node_143', distanceMeters: 16.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_143', toId: 'node_144', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_144', toId: 'node_145', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_145', toId: 'node_146', distanceMeters: 17.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_147', toId: 'node_148', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_148', toId: 'node_149', distanceMeters: 23.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_149', toId: 'node_150', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_150', toId: 'node_151', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_151', toId: 'node_152', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_152', toId: 'node_153', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_153', toId: 'node_154', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_154', toId: 'node_155', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_155', toId: 'node_156', distanceMeters: 22.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_156', toId: 'node_157', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_157', toId: 'node_158', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_158', toId: 'node_159', distanceMeters: 16.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_159', toId: 'node_160', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_160', toId: 'node_161', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_161', toId: 'node_162', distanceMeters: 63.6, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_162', toId: 'node_163', distanceMeters: 21.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_163', toId: 'node_164', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_164', toId: 'node_165', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_165', toId: 'node_166', distanceMeters: 17.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_166', toId: 'node_167', distanceMeters: 20.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_167', toId: 'node_168', distanceMeters: 15.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_168', toId: 'node_169', distanceMeters: 9.4, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_169', toId: 'node_170', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_170', toId: 'node_171', distanceMeters: 17.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_171', toId: 'node_172', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_172', toId: 'node_173', distanceMeters: 23.6, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_173', toId: 'node_174', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_174', toId: 'node_175', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_175', toId: 'node_176', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_176', toId: 'node_177', distanceMeters: 21.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_177', toId: 'node_178', distanceMeters: 12.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_178', toId: 'node_179', distanceMeters: 13.4, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_179', toId: 'node_180', distanceMeters: 18.0, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_180', toId: 'node_181', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_181', toId: 'node_182', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_182', toId: 'node_183', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_183', toId: 'node_184', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_184', toId: 'node_185', distanceMeters: 17.0, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_185', toId: 'node_186', distanceMeters: 15.7, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_186', toId: 'node_187', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_187', toId: 'node_188', distanceMeters: 21.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_188', toId: 'node_189', distanceMeters: 17.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_189', toId: 'node_190', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_190', toId: 'node_191', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_191', toId: 'node_192', distanceMeters: 20.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_192', toId: 'node_193', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_194', toId: 'node_195', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_195', toId: 'node_196', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_197', toId: 'node_198', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_198', toId: 'node_199', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_199', toId: 'node_200', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_200', toId: 'node_201', distanceMeters: 23.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_201', toId: 'node_202', distanceMeters: 23.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_202', toId: 'node_203', distanceMeters: 17.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_203', toId: 'node_204', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_204', toId: 'node_205', distanceMeters: 22.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_205', toId: 'node_206', distanceMeters: 21.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_206', toId: 'node_207', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_207', toId: 'node_208', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_208', toId: 'node_209', distanceMeters: 9.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_209', toId: 'node_210', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_210', toId: 'node_211', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_211', toId: 'node_212', distanceMeters: 21.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_212', toId: 'node_213', distanceMeters: 11.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_213', toId: 'node_214', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_214', toId: 'node_215', distanceMeters: 22.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_215', toId: 'node_216', distanceMeters: 16.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_216', toId: 'node_217', distanceMeters: 17.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_217', toId: 'node_218', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_218', toId: 'node_219', distanceMeters: 16.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_219', toId: 'node_220', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_220', toId: 'node_221', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_221', toId: 'node_222', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_222', toId: 'node_223', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_223', toId: 'node_224', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_224', toId: 'node_225', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_225', toId: 'node_226', distanceMeters: 16.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_226', toId: 'node_227', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_227', toId: 'node_228', distanceMeters: 15.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_228', toId: 'node_229', distanceMeters: 23.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_229', toId: 'node_230', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_230', toId: 'node_231', distanceMeters: 22.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_231', toId: 'node_232', distanceMeters: 16.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_232', toId: 'node_233', distanceMeters: 17.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_233', toId: 'node_234', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_234', toId: 'node_235', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_235', toId: 'node_236', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_236', toId: 'node_237', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_237', toId: 'node_238', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_238', toId: 'node_239', distanceMeters: 12.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_239', toId: 'node_240', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_240', toId: 'node_241', distanceMeters: 21.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_241', toId: 'node_242', distanceMeters: 16.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_242', toId: 'node_243', distanceMeters: 16.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_243', toId: 'node_244', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_244', toId: 'node_245', distanceMeters: 9.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_245', toId: 'node_246', distanceMeters: 8.5, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_246', toId: 'node_247', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_247', toId: 'node_248', distanceMeters: 23.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_248', toId: 'node_249', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_249', toId: 'node_250', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_250', toId: 'node_251', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_251', toId: 'node_252', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_252', toId: 'node_253', distanceMeters: 86.1, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_253', toId: 'node_254', distanceMeters: 46.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_254', toId: 'node_255', distanceMeters: 21.3, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_255', toId: 'node_256', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_256', toId: 'node_257', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_257', toId: 'node_258', distanceMeters: 24.5, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_258', toId: 'node_259', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_259', toId: 'node_260', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_260', toId: 'node_261', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_261', toId: 'node_262', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_262', toId: 'node_263', distanceMeters: 17.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_264', toId: 'node_265', distanceMeters: 16.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_265', toId: 'node_266', distanceMeters: 17.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_266', toId: 'node_267', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_267', toId: 'node_268', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_268', toId: 'node_269', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_269', toId: 'node_270', distanceMeters: 23.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_270', toId: 'node_271', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_271', toId: 'node_272', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_272', toId: 'node_273', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_273', toId: 'node_274', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_274', toId: 'node_275', distanceMeters: 17.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_275', toId: 'node_276', distanceMeters: 21.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_276', toId: 'node_277', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_277', toId: 'node_278', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_278', toId: 'node_279', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_279', toId: 'node_280', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_280', toId: 'node_281', distanceMeters: 21.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_281', toId: 'node_282', distanceMeters: 22.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_282', toId: 'node_283', distanceMeters: 15.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_283', toId: 'node_284', distanceMeters: 10.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_284', toId: 'node_285', distanceMeters: 21.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_285', toId: 'node_286', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_286', toId: 'node_287', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_287', toId: 'node_288', distanceMeters: 17.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_288', toId: 'node_289', distanceMeters: 21.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_289', toId: 'node_290', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_290', toId: 'node_291', distanceMeters: 24.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_291', toId: 'node_292', distanceMeters: 22.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_292', toId: 'node_293', distanceMeters: 16.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_293', toId: 'node_294', distanceMeters: 20.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_294', toId: 'node_295', distanceMeters: 21.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_295', toId: 'node_296', distanceMeters: 21.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_296', toId: 'node_297', distanceMeters: 22.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_297', toId: 'node_298', distanceMeters: 15.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_298', toId: 'node_299', distanceMeters: 10.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_299', toId: 'node_300', distanceMeters: 17.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_300', toId: 'node_301', distanceMeters: 16.2, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_301', toId: 'node_302', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_302', toId: 'node_303', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_303', toId: 'node_304', distanceMeters: 17.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_304', toId: 'node_305', distanceMeters: 20.7, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_305', toId: 'node_306', distanceMeters: 49.7, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_306', toId: 'node_307', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_307', toId: 'node_308', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_308', toId: 'node_309', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_309', toId: 'node_310', distanceMeters: 10.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_310', toId: 'node_311', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_311', toId: 'node_312', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_312', toId: 'node_313', distanceMeters: 17.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_313', toId: 'node_314', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_314', toId: 'node_315', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_315', toId: 'node_316', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_316', toId: 'node_317', distanceMeters: 23.5, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_317', toId: 'node_318', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_318', toId: 'node_319', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_319', toId: 'node_320', distanceMeters: 20.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_320', toId: 'node_321', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_322', toId: 'node_323', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_323', toId: 'node_324', distanceMeters: 21.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_324', toId: 'node_325', distanceMeters: 24.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_325', toId: 'node_326', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_326', toId: 'node_327', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_327', toId: 'node_328', distanceMeters: 16.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_328', toId: 'node_329', distanceMeters: 23.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_329', toId: 'node_330', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_330', toId: 'node_331', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_331', toId: 'node_332', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_332', toId: 'node_333', distanceMeters: 23.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_333', toId: 'node_334', distanceMeters: 24.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_334', toId: 'node_335', distanceMeters: 20.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_335', toId: 'node_336', distanceMeters: 23.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_336', toId: 'node_337', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_337', toId: 'node_338', distanceMeters: 23.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_338', toId: 'node_339', distanceMeters: 19.9, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_339', toId: 'node_340', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_340', toId: 'node_341', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_341', toId: 'node_342', distanceMeters: 22.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_342', toId: 'node_343', distanceMeters: 21.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_343', toId: 'node_344', distanceMeters: 24.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_344', toId: 'node_345', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_345', toId: 'node_346', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_346', toId: 'node_347', distanceMeters: 22.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_347', toId: 'node_348', distanceMeters: 22.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_348', toId: 'node_349', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_349', toId: 'node_350', distanceMeters: 22.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_350', toId: 'node_351', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_351', toId: 'node_352', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_352', toId: 'node_353', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_353', toId: 'node_354', distanceMeters: 75.3, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_354', toId: 'node_355', distanceMeters: 20.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_355', toId: 'node_356', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_356', toId: 'node_357', distanceMeters: 16.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_357', toId: 'node_358', distanceMeters: 20.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_359', toId: 'node_360', distanceMeters: 42.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_360', toId: 'node_361', distanceMeters: 27.0, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_361', toId: 'node_362', distanceMeters: 11.4, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_362', toId: 'node_363', distanceMeters: 16.8, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_363', toId: 'node_364', distanceMeters: 24.2, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_364', toId: 'node_365', distanceMeters: 14.5, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_365', toId: 'node_366', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_366', toId: 'node_367', distanceMeters: 10.2, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_367', toId: 'node_368', distanceMeters: 11.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_368', toId: 'node_369', distanceMeters: 14.1, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_369', toId: 'node_370', distanceMeters: 12.4, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_370', toId: 'node_371', distanceMeters: 9.3, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_371', toId: 'node_372', distanceMeters: 11.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_372', toId: 'node_373', distanceMeters: 8.3, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_373', toId: 'node_374', distanceMeters: 9.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_374', toId: 'node_375', distanceMeters: 16.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_375', toId: 'node_376', distanceMeters: 14.2, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_376', toId: 'node_377', distanceMeters: 12.8, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_377', toId: 'node_378', distanceMeters: 9.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_378', toId: 'node_379', distanceMeters: 10.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_379', toId: 'node_380', distanceMeters: 22.1, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_380', toId: 'node_381', distanceMeters: 16.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_381', toId: 'node_382', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_382', toId: 'node_383', distanceMeters: 22.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_383', toId: 'node_384', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_384', toId: 'node_385', distanceMeters: 23.4, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_385', toId: 'node_386', distanceMeters: 13.8, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_386', toId: 'node_387', distanceMeters: 23.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_387', toId: 'node_388', distanceMeters: 8.5, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_388', toId: 'node_389', distanceMeters: 9.7, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_390', toId: 'node_391', distanceMeters: 15.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_391', toId: 'node_392', distanceMeters: 21.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_392', toId: 'node_393', distanceMeters: 17.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_393', toId: 'node_394', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_394', toId: 'node_395', distanceMeters: 22.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_395', toId: 'node_396', distanceMeters: 20.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_396', toId: 'node_397', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_397', toId: 'node_398', distanceMeters: 21.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_398', toId: 'node_399', distanceMeters: 20.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_399', toId: 'node_400', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_400', toId: 'node_401', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_401', toId: 'node_402', distanceMeters: 22.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_402', toId: 'node_403', distanceMeters: 16.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_403', toId: 'node_404', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_405', toId: 'node_406', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_406', toId: 'node_407', distanceMeters: 20.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_407', toId: 'node_408', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_408', toId: 'node_409', distanceMeters: 22.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_409', toId: 'node_410', distanceMeters: 21.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_410', toId: 'node_411', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_411', toId: 'node_412', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_412', toId: 'node_413', distanceMeters: 22.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_413', toId: 'node_414', distanceMeters: 16.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_414', toId: 'node_415', distanceMeters: 41.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_415', toId: 'node_416', distanceMeters: 8.6, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_416', toId: 'node_417', distanceMeters: 16.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_417', toId: 'node_418', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_418', toId: 'node_419', distanceMeters: 17.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_419', toId: 'node_420', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_420', toId: 'node_421', distanceMeters: 23.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_421', toId: 'node_422', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_422', toId: 'node_423', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_423', toId: 'node_424', distanceMeters: 10.7, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_424', toId: 'node_425', distanceMeters: 21.9, voiceInstruction: 'Turn right'),
+    CampusEdge(fromId: 'node_425', toId: 'node_426', distanceMeters: 25.3, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_426', toId: 'node_427', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_428', toId: 'node_429', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_429', toId: 'node_430', distanceMeters: 10.3, voiceInstruction: 'Turn left'),
+    CampusEdge(fromId: 'node_430', toId: 'node_431', distanceMeters: 22.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_431', toId: 'node_432', distanceMeters: 16.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_432', toId: 'node_433', distanceMeters: 22.6, voiceInstruction: 'Turn right'),
+    // Junction connections
+    CampusEdge(fromId: 'node_001', toId: 'node_133', distanceMeters: 7.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_001', toId: 'node_390', distanceMeters: 4.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_001', toId: 'node_391', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_002', toId: 'node_133', distanceMeters: 8.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_002', toId: 'node_221', distanceMeters: 7.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_002', toId: 'node_391', distanceMeters: 5.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_003', toId: 'node_132', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_003', toId: 'node_222', distanceMeters: 4.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_003', toId: 'node_392', distanceMeters: 6.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_004', toId: 'node_131', distanceMeters: 8.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_004', toId: 'node_223', distanceMeters: 4.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_004', toId: 'node_393', distanceMeters: 4.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_004', toId: 'node_394', distanceMeters: 9.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_005', toId: 'node_224', distanceMeters: 7.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_005', toId: 'node_393', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_005', toId: 'node_394', distanceMeters: 2.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_006', toId: 'node_224', distanceMeters: 3.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_007', toId: 'node_129', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_007', toId: 'node_225', distanceMeters: 3.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_008', toId: 'node_226', distanceMeters: 3.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_009', toId: 'node_227', distanceMeters: 2.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_010', toId: 'node_127', distanceMeters: 9.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_010', toId: 'node_228', distanceMeters: 8.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_011', toId: 'node_126', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_011', toId: 'node_229', distanceMeters: 6.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_012', toId: 'node_125', distanceMeters: 11.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_012', toId: 'node_230', distanceMeters: 3.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_014', toId: 'node_403', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_015', toId: 'node_404', distanceMeters: 2.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_018', toId: 'node_074', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_019', toId: 'node_073', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_020', toId: 'node_072', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_021', toId: 'node_027', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_021', toId: 'node_028', distanceMeters: 8.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_021', toId: 'node_072', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_022', toId: 'node_026', distanceMeters: 8.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_023', toId: 'node_025', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_028', toId: 'node_071', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_029', toId: 'node_070', distanceMeters: 8.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_030', toId: 'node_069', distanceMeters: 8.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_031', toId: 'node_069', distanceMeters: 9.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_032', toId: 'node_067', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_032', toId: 'node_068', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_033', toId: 'node_066', distanceMeters: 5.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_033', toId: 'node_067', distanceMeters: 5.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_034', toId: 'node_065', distanceMeters: 4.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_034', toId: 'node_264', distanceMeters: 6.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_035', toId: 'node_064', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_035', toId: 'node_265', distanceMeters: 1.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_036', toId: 'node_063', distanceMeters: 5.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_036', toId: 'node_266', distanceMeters: 5.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_036', toId: 'node_267', distanceMeters: 6.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_037', toId: 'node_062', distanceMeters: 6.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_037', toId: 'node_268', distanceMeters: 5.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_037', toId: 'node_433', distanceMeters: 6.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_061', distanceMeters: 5.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_268', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_269', distanceMeters: 5.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_325', distanceMeters: 10.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_326', distanceMeters: 1.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_038', toId: 'node_432', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_039', toId: 'node_270', distanceMeters: 3.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_040', toId: 'node_271', distanceMeters: 8.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_040', toId: 'node_272', distanceMeters: 2.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_040', toId: 'node_323', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_041', toId: 'node_045', distanceMeters: 2.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_041', toId: 'node_060', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_041', toId: 'node_273', distanceMeters: 8.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_042', toId: 'node_044', distanceMeters: 2.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_042', toId: 'node_059', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_042', toId: 'node_060', distanceMeters: 6.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_043', toId: 'node_057', distanceMeters: 8.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_043', toId: 'node_058', distanceMeters: 1.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_043', toId: 'node_426', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_043', toId: 'node_427', distanceMeters: 1.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_044', toId: 'node_059', distanceMeters: 3.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_044', toId: 'node_060', distanceMeters: 8.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_045', toId: 'node_060', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_045', toId: 'node_273', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_045', toId: 'node_322', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_046', toId: 'node_274', distanceMeters: 4.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_046', toId: 'node_322', distanceMeters: 4.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_047', toId: 'node_305', distanceMeters: 5.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_048', toId: 'node_304', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_049', toId: 'node_056', distanceMeters: 3.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_050', toId: 'node_054', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_050', toId: 'node_055', distanceMeters: 6.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_051', toId: 'node_053', distanceMeters: 4.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_051', toId: 'node_054', distanceMeters: 6.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_052', toId: 'node_320', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_052', toId: 'node_321', distanceMeters: 6.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_057', toId: 'node_426', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_057', toId: 'node_427', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_058', toId: 'node_426', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_058', toId: 'node_427', distanceMeters: 0.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_059', toId: 'node_427', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_061', toId: 'node_269', distanceMeters: 2.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_061', toId: 'node_325', distanceMeters: 5.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_061', toId: 'node_326', distanceMeters: 7.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_062', toId: 'node_267', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_062', toId: 'node_268', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_062', toId: 'node_433', distanceMeters: 1.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_063', toId: 'node_266', distanceMeters: 1.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_063', toId: 'node_267', distanceMeters: 12.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_064', toId: 'node_265', distanceMeters: 5.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_064', toId: 'node_266', distanceMeters: 11.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_065', toId: 'node_264', distanceMeters: 3.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_080', toId: 'node_123', distanceMeters: 9.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_080', toId: 'node_124', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_080', toId: 'node_232', distanceMeters: 9.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_085', toId: 'node_088', distanceMeters: 8.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_086', toId: 'node_088', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_090', toId: 'node_109', distanceMeters: 1.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_091', toId: 'node_108', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_093', toId: 'node_254', distanceMeters: 6.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_094', toId: 'node_098', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_094', toId: 'node_255', distanceMeters: 7.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_095', toId: 'node_097', distanceMeters: 3.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_095', toId: 'node_098', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_098', toId: 'node_255', distanceMeters: 6.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_099', toId: 'node_253', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_099', toId: 'node_256', distanceMeters: 6.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_099', toId: 'node_257', distanceMeters: 4.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_100', toId: 'node_253', distanceMeters: 6.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_100', toId: 'node_257', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_101', toId: 'node_258', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_102', toId: 'node_258', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_106', toId: 'node_110', distanceMeters: 3.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_106', toId: 'node_114', distanceMeters: 5.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_107', toId: 'node_111', distanceMeters: 6.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_107', toId: 'node_112', distanceMeters: 4.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_107', toId: 'node_113', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_110', toId: 'node_114', distanceMeters: 2.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_111', toId: 'node_113', distanceMeters: 2.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_117', toId: 'node_262', distanceMeters: 10.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_117', toId: 'node_263', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_118', toId: 'node_251', distanceMeters: 10.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_118', toId: 'node_252', distanceMeters: 3.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_118', toId: 'node_263', distanceMeters: 2.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_122', toId: 'node_233', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_123', toId: 'node_232', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_124', toId: 'node_231', distanceMeters: 8.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_125', toId: 'node_230', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_126', toId: 'node_229', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_127', toId: 'node_228', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_128', toId: 'node_227', distanceMeters: 12.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_129', toId: 'node_225', distanceMeters: 11.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_131', toId: 'node_223', distanceMeters: 6.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_131', toId: 'node_393', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_132', toId: 'node_222', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_132', toId: 'node_391', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_132', toId: 'node_392', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_133', toId: 'node_221', distanceMeters: 7.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_133', toId: 'node_390', distanceMeters: 9.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_133', toId: 'node_391', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_134', toId: 'node_220', distanceMeters: 7.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_135', toId: 'node_219', distanceMeters: 9.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_137', toId: 'node_216', distanceMeters: 7.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_138', toId: 'node_148', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_138', toId: 'node_215', distanceMeters: 4.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_139', toId: 'node_147', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_139', toId: 'node_195', distanceMeters: 6.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_194', distanceMeters: 8.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_361', distanceMeters: 6.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_362', distanceMeters: 8.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_370', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_377', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_378', distanceMeters: 5.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_140', toId: 'node_379', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_141', toId: 'node_379', distanceMeters: 7.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_142', toId: 'node_380', distanceMeters: 1.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_143', toId: 'node_381', distanceMeters: 0.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_143', toId: 'node_382', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_144', toId: 'node_381', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_144', toId: 'node_382', distanceMeters: 4.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_144', toId: 'node_389', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_145', toId: 'node_383', distanceMeters: 6.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_145', toId: 'node_386', distanceMeters: 2.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_147', toId: 'node_194', distanceMeters: 5.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_147', toId: 'node_361', distanceMeters: 6.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_147', toId: 'node_370', distanceMeters: 9.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_147', toId: 'node_378', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_148', toId: 'node_195', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_148', toId: 'node_214', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_148', toId: 'node_215', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_149', toId: 'node_196', distanceMeters: 8.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_149', toId: 'node_212', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_150', toId: 'node_211', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_151', toId: 'node_210', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_152', toId: 'node_208', distanceMeters: 11.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_152', toId: 'node_209', distanceMeters: 4.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_153', toId: 'node_189', distanceMeters: 4.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_153', toId: 'node_208', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_159', toId: 'node_165', distanceMeters: 10.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_159', toId: 'node_166', distanceMeters: 8.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_159', toId: 'node_197', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_166', toId: 'node_197', distanceMeters: 4.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_167', toId: 'node_198', distanceMeters: 4.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_167', toId: 'node_199', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_169', toId: 'node_199', distanceMeters: 7.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_170', toId: 'node_200', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_171', toId: 'node_201', distanceMeters: 0.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_172', toId: 'node_202', distanceMeters: 7.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_173', toId: 'node_183', distanceMeters: 6.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_173', toId: 'node_184', distanceMeters: 9.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_174', toId: 'node_182', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_174', toId: 'node_183', distanceMeters: 8.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_185', toId: 'node_203', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_185', toId: 'node_204', distanceMeters: 9.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_186', toId: 'node_203', distanceMeters: 9.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_186', toId: 'node_205', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_187', toId: 'node_205', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_187', toId: 'node_206', distanceMeters: 9.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_188', toId: 'node_206', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_188', toId: 'node_207', distanceMeters: 2.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_188', toId: 'node_208', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_194', toId: 'node_361', distanceMeters: 1.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_194', toId: 'node_370', distanceMeters: 7.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_194', toId: 'node_378', distanceMeters: 6.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_195', toId: 'node_215', distanceMeters: 10.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_222', toId: 'node_392', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_223', toId: 'node_393', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_224', toId: 'node_394', distanceMeters: 9.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_241', toId: 'node_248', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_242', toId: 'node_247', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_243', toId: 'node_247', distanceMeters: 12.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_251', toId: 'node_263', distanceMeters: 9.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_252', toId: 'node_263', distanceMeters: 5.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_253', toId: 'node_257', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_267', toId: 'node_433', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_268', toId: 'node_433', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_269', toId: 'node_325', distanceMeters: 7.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_269', toId: 'node_326', distanceMeters: 7.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_270', toId: 'node_324', distanceMeters: 8.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_271', toId: 'node_324', distanceMeters: 3.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_272', toId: 'node_323', distanceMeters: 9.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_273', toId: 'node_323', distanceMeters: 5.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_274', toId: 'node_322', distanceMeters: 2.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_276', toId: 'node_306', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_277', toId: 'node_307', distanceMeters: 2.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_277', toId: 'node_308', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_278', toId: 'node_309', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_278', toId: 'node_310', distanceMeters: 4.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_286', toId: 'node_293', distanceMeters: 9.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_287', toId: 'node_292', distanceMeters: 3.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_288', toId: 'node_291', distanceMeters: 9.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_298', toId: 'node_313', distanceMeters: 4.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_299', toId: 'node_312', distanceMeters: 8.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_299', toId: 'node_313', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_326', toId: 'node_432', distanceMeters: 8.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_327', toId: 'node_432', distanceMeters: 4.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_328', toId: 'node_431', distanceMeters: 2.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_329', toId: 'node_429', distanceMeters: 6.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_329', toId: 'node_430', distanceMeters: 4.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_330', toId: 'node_346', distanceMeters: 3.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_330', toId: 'node_429', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_331', toId: 'node_345', distanceMeters: 9.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_332', toId: 'node_344', distanceMeters: 4.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_333', toId: 'node_343', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_334', toId: 'node_342', distanceMeters: 3.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_335', toId: 'node_341', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_336', toId: 'node_340', distanceMeters: 4.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_337', toId: 'node_339', distanceMeters: 3.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_346', toId: 'node_429', distanceMeters: 9.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_347', toId: 'node_428', distanceMeters: 6.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_350', toId: 'node_416', distanceMeters: 11.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_350', toId: 'node_417', distanceMeters: 8.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_352', toId: 'node_358', distanceMeters: 8.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_352', toId: 'node_413', distanceMeters: 6.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_353', toId: 'node_358', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_353', toId: 'node_413', distanceMeters: 5.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_354', toId: 'node_409', distanceMeters: 9.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_355', toId: 'node_409', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_355', toId: 'node_410', distanceMeters: 11.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_356', toId: 'node_410', distanceMeters: 3.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_356', toId: 'node_411', distanceMeters: 11.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_357', toId: 'node_411', distanceMeters: 5.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_357', toId: 'node_412', distanceMeters: 6.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_358', toId: 'node_413', distanceMeters: 7.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_359', toId: 'node_367', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_359', toId: 'node_371', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_360', toId: 'node_364', distanceMeters: 6.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_360', toId: 'node_376', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_361', toId: 'node_370', distanceMeters: 7.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_361', toId: 'node_378', distanceMeters: 5.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_361', toId: 'node_379', distanceMeters: 11.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_364', distanceMeters: 10.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_365', distanceMeters: 10.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_369', distanceMeters: 4.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_370', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_373', distanceMeters: 6.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_374', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_377', distanceMeters: 3.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_362', toId: 'node_378', distanceMeters: 6.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_365', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_366', distanceMeters: 3.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_367', distanceMeters: 7.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_368', distanceMeters: 4.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_370', distanceMeters: 11.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_371', distanceMeters: 2.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_372', distanceMeters: 10.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_363', toId: 'node_373', distanceMeters: 11.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_364', toId: 'node_369', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_364', toId: 'node_374', distanceMeters: 8.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_364', toId: 'node_376', distanceMeters: 6.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_364', toId: 'node_377', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_368', distanceMeters: 7.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_369', distanceMeters: 7.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_371', distanceMeters: 11.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_372', distanceMeters: 2.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_373', distanceMeters: 5.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_374', distanceMeters: 6.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_365', toId: 'node_377', distanceMeters: 9.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_366', toId: 'node_368', distanceMeters: 2.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_366', toId: 'node_371', distanceMeters: 5.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_366', toId: 'node_372', distanceMeters: 9.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_367', toId: 'node_370', distanceMeters: 10.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_367', toId: 'node_371', distanceMeters: 5.5, voiceInstruction: null),
+    CampusEdge(fromId: 'node_368', toId: 'node_371', distanceMeters: 6.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_368', toId: 'node_372', distanceMeters: 6.7, voiceInstruction: null),
+    CampusEdge(fromId: 'node_368', toId: 'node_373', distanceMeters: 10.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_369', toId: 'node_372', distanceMeters: 10.2, voiceInstruction: null),
+    CampusEdge(fromId: 'node_369', toId: 'node_373', distanceMeters: 4.6, voiceInstruction: null),
+    CampusEdge(fromId: 'node_369', toId: 'node_374', distanceMeters: 6.8, voiceInstruction: null),
+    CampusEdge(fromId: 'node_369', toId: 'node_377', distanceMeters: 2.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_369', toId: 'node_378', distanceMeters: 10.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_370', toId: 'node_373', distanceMeters: 8.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_370', toId: 'node_378', distanceMeters: 7.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_371', toId: 'node_373', distanceMeters: 11.1, voiceInstruction: null),
+    CampusEdge(fromId: 'node_372', toId: 'node_374', distanceMeters: 7.9, voiceInstruction: null),
+    CampusEdge(fromId: 'node_373', toId: 'node_377', distanceMeters: 6.4, voiceInstruction: null),
+    CampusEdge(fromId: 'node_373', toId: 'node_378', distanceMeters: 9.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_374', toId: 'node_376', distanceMeters: 9.0, voiceInstruction: null),
+    CampusEdge(fromId: 'node_374', toId: 'node_377', distanceMeters: 8.3, voiceInstruction: null),
+    CampusEdge(fromId: 'node_383', toId: 'node_386', distanceMeters: 8.9, voiceInstruction: null),
     // --- ADD MORE EDGES HERE ---
   ],
 );

@@ -1,474 +1,906 @@
 import '../models/building.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../services/kml_parser_service.dart';
 
-/// Campus building data
-/// Loads buildings from KML file, with fallback to hardcoded data
+/// Campus building data — auto-generated from KML
+/// Entrance points snapped to nearest campus graph node
 class BuildingsData {
-  // Lead City University approximate center coordinates
-  static const LatLng _campusCenter = LatLng(7.3964, 3.9167);
-  
-  // Cache for KML-loaded buildings
-  static List<Building>? _kmlBuildings;
-  static bool _isLoading = false;
-  static bool _loadAttempted = false;
+  static const LatLng campusCenter = LatLng(7.32607, 3.88041);
 
-  /// Load buildings from KML file
-  static Future<List<Building>> loadFromKml() async {
-    if (_kmlBuildings != null) {
-      return _kmlBuildings!;
-    }
-    
-    if (_isLoading) {
-      // Wait for ongoing load
-      while (_isLoading) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-      return _kmlBuildings ?? _getHardcodedBuildings();
-    }
-    
-    _isLoading = true;
-    _loadAttempted = true;
-    
-    try {
-      final parser = KmlParserService();
-      _kmlBuildings = await parser.parseKmlFile(
-        'assets/Lead City University Campus Map.kml',
-      );
-      _isLoading = false;
-      return _kmlBuildings!;
-    } catch (e) {
-      _isLoading = false;
-      // Fallback to hardcoded data on error
-      return _getHardcodedBuildings();
-    }
-  }
-
-  /// Get all buildings (uses KML if loaded, otherwise hardcoded)
   static List<Building> getAllBuildings() {
-    // If KML data is available, use it
-    if (_kmlBuildings != null) {
-      return _kmlBuildings!;
-    }
-    
-    // If KML loading hasn't been attempted yet, return hardcoded
-    // (KML will be loaded asynchronously in app startup)
-    if (!_loadAttempted) {
-      return _getHardcodedBuildings();
-    }
-    
-    // If loading failed, return hardcoded as fallback
-    return _getHardcodedBuildings();
-  }
-
-  /// Get hardcoded buildings (fallback data)
-  static List<Building> _getHardcodedBuildings() {
     return [
-      // Academic Buildings (17)
       Building(
         id: 'library',
         name: 'Library',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3960, 3.9165),
+        entrancePoint: const LatLng(7.32727000, 3.87752667),
         polygonCoordinates: [
-          const LatLng(7.3958, 3.9163),
-          const LatLng(7.3962, 3.9163),
-          const LatLng(7.3962, 3.9167),
-          const LatLng(7.3958, 3.9167),
+          const LatLng(7.32709600, 3.87732600),
+          const LatLng(7.32673680, 3.87738500),
+          const LatLng(7.32676480, 3.87761430),
+          const LatLng(7.32714250, 3.87754590),
+          const LatLng(7.32713190, 3.87748160),
+          const LatLng(7.32720370, 3.87746550),
+          const LatLng(7.32718910, 3.87736350),
+          const LatLng(7.32710800, 3.87738500),
+          const LatLng(7.32709600, 3.87732600),
         ],
       ),
       Building(
-        id: 'faculty_of_law',
-        name: 'Faculty of Law',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3965, 3.9170),
+        id: 'car_park',
+        name: 'Car Park',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32741000, 3.87701000),
         polygonCoordinates: [
-          const LatLng(7.3963, 3.9168),
-          const LatLng(7.3967, 3.9168),
-          const LatLng(7.3967, 3.9172),
-          const LatLng(7.3963, 3.9172),
+          const LatLng(7.32807420, 3.87689940),
+          const LatLng(7.32734930, 3.87700540),
+          const LatLng(7.32740650, 3.87744390),
+          const LatLng(7.32815800, 3.87724410),
+          const LatLng(7.32807420, 3.87689940),
+        ],
+      ),
+      Building(
+        id: 'lecture_room_11_13',
+        name: 'Lecture Room 11-13',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32817333, 3.87715333),
+        polygonCoordinates: [
+          const LatLng(7.32830700, 3.87688660),
+          const LatLng(7.32812610, 3.87691880),
+          const LatLng(7.32821120, 3.87719500),
+          const LatLng(7.32838150, 3.87713870),
+          const LatLng(7.32830700, 3.87688660),
         ],
       ),
       Building(
         id: 'faculty_of_engineering',
         name: 'Faculty of Engineering',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3970, 3.9165),
+        entrancePoint: const LatLng(7.32821000, 3.87735167),
         polygonCoordinates: [
-          const LatLng(7.3968, 3.9163),
-          const LatLng(7.3972, 3.9163),
-          const LatLng(7.3972, 3.9167),
-          const LatLng(7.3968, 3.9167),
+          const LatLng(7.32818570, 3.87740550),
+          const LatLng(7.32813390, 3.87740550),
+          const LatLng(7.32811260, 3.87732640),
+          const LatLng(7.32801810, 3.87735320),
+          const LatLng(7.32803940, 3.87742830),
+          const LatLng(7.32799420, 3.87744300),
+          const LatLng(7.32810330, 3.87785610),
+          const LatLng(7.32829220, 3.87780110),
+          const LatLng(7.32818570, 3.87740550),
         ],
       ),
       Building(
-        id: 'faculty_of_nursing_engineering',
-        name: 'Faculty of Nursing/Engineering',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3975, 3.9170),
+        id: 'clinic',
+        name: 'Clinic',
+        type: 'Medical',
+        entrancePoint: const LatLng(7.32717333, 3.87764500),
         polygonCoordinates: [
-          const LatLng(7.3973, 3.9168),
-          const LatLng(7.3977, 3.9168),
-          const LatLng(7.3977, 3.9172),
-          const LatLng(7.3973, 3.9172),
+          const LatLng(7.32730490, 3.87784710),
+          const LatLng(7.32719840, 3.87766200),
+          const LatLng(7.32661850, 3.87797590),
+          const LatLng(7.32673550, 3.87817700),
+          const LatLng(7.32730490, 3.87784710),
         ],
       ),
       Building(
         id: 'faculty_of_social_science',
-        name: 'Faculty of Social Science',
+        name: 'Faculty of Social science',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3955, 3.9175),
+        entrancePoint: const LatLng(7.32655833, 3.87918167),
         polygonCoordinates: [
-          const LatLng(7.3953, 3.9173),
-          const LatLng(7.3957, 3.9173),
-          const LatLng(7.3957, 3.9177),
-          const LatLng(7.3953, 3.9177),
+          const LatLng(7.32629980, 3.87902200),
+          const LatLng(7.32580500, 3.87904880),
+          const LatLng(7.32583160, 3.87929020),
+          const LatLng(7.32632370, 3.87924460),
+          const LatLng(7.32629980, 3.87902200),
         ],
       ),
       Building(
         id: 'faculty_of_art',
         name: 'Faculty of Art',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3960, 3.9175),
+        entrancePoint: const LatLng(7.32659333, 3.87937167),
         polygonCoordinates: [
-          const LatLng(7.3958, 3.9173),
-          const LatLng(7.3962, 3.9173),
-          const LatLng(7.3962, 3.9177),
-          const LatLng(7.3958, 3.9177),
+          const LatLng(7.32633440, 3.87939750),
+          const LatLng(7.32585020, 3.87943240),
+          const LatLng(7.32587680, 3.87966840),
+          const LatLng(7.32636360, 3.87962020),
+          const LatLng(7.32633440, 3.87939750),
         ],
       ),
       Building(
-        id: 'faculty_of_environmental_science',
-        name: 'Faculty of Environmental Science',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3965, 3.9175),
+        id: 'senate_building',
+        name: 'Senate Building',
+        type: 'Administrative',
+        entrancePoint: const LatLng(7.32821667, 3.88034833),
         polygonCoordinates: [
-          const LatLng(7.3963, 3.9173),
-          const LatLng(7.3967, 3.9173),
-          const LatLng(7.3967, 3.9177),
-          const LatLng(7.3963, 3.9177),
-        ],
-      ),
-      Building(
-        id: 'faculty_of_natural_applied_science',
-        name: 'Faculty of Natural and Applied Science',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3970, 3.9175),
-        polygonCoordinates: [
-          const LatLng(7.3968, 3.9173),
-          const LatLng(7.3972, 3.9173),
-          const LatLng(7.3972, 3.9177),
-          const LatLng(7.3968, 3.9177),
-        ],
-      ),
-      Building(
-        id: 'faculty_of_dentistry',
-        name: 'Faculty of Dentistry',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3975, 3.9175),
-        polygonCoordinates: [
-          const LatLng(7.3973, 3.9173),
-          const LatLng(7.3977, 3.9173),
-          const LatLng(7.3977, 3.9177),
-          const LatLng(7.3973, 3.9177),
-        ],
-      ),
-      Building(
-        id: 'computer_science',
-        name: 'Department of Computer Science',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3950, 3.9160),
-        polygonCoordinates: [
-          const LatLng(7.3948, 3.9158),
-          const LatLng(7.3952, 3.9158),
-          const LatLng(7.3952, 3.9162),
-          const LatLng(7.3948, 3.9162),
+          const LatLng(7.32857200, 3.88018580),
+          const LatLng(7.32835390, 3.88034400),
+          const LatLng(7.32864250, 3.88071150),
+          const LatLng(7.32886060, 3.88055190),
+          const LatLng(7.32857200, 3.88018580),
         ],
       ),
       Building(
         id: 'college_of_medicine',
         name: 'College of Medicine',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3955, 3.9160),
+        entrancePoint: const LatLng(7.32661500, 3.88123667),
         polygonCoordinates: [
-          const LatLng(7.3953, 3.9158),
-          const LatLng(7.3957, 3.9158),
-          const LatLng(7.3957, 3.9162),
-          const LatLng(7.3953, 3.9162),
+          const LatLng(7.32668500, 3.88076390),
+          const LatLng(7.32622210, 3.88089530),
+          const LatLng(7.32633650, 3.88118500),
+          const LatLng(7.32678080, 3.88101330),
+          const LatLng(7.32668500, 3.88076390),
         ],
       ),
       Building(
-        id: 'college_of_medicine_lecture_hub',
-        name: 'College of Medicine Lecture Hub',
+        id: 'faculty_of_law',
+        name: 'Faculty of Law',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3960, 3.9160),
+        entrancePoint: const LatLng(7.32841500, 3.88114000),
         polygonCoordinates: [
-          const LatLng(7.3958, 3.9158),
-          const LatLng(7.3962, 3.9158),
-          const LatLng(7.3962, 3.9162),
-          const LatLng(7.3958, 3.9162),
+          const LatLng(7.32847360, 3.88111360),
+          const LatLng(7.32850150, 3.88116050),
+          const LatLng(7.32843500, 3.88121010),
+          const LatLng(7.32847760, 3.88129730),
+          const LatLng(7.32856140, 3.88125440),
+          const LatLng(7.32858660, 3.88130670),
+          const LatLng(7.32895910, 3.88107600),
+          const LatLng(7.32883270, 3.88088020),
+          const LatLng(7.32847360, 3.88111360),
         ],
       ),
       Building(
         id: 'law_theatre',
         name: 'Law Theatre',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3965, 3.9160),
+        entrancePoint: const LatLng(7.32837167, 3.88177000),
         polygonCoordinates: [
-          const LatLng(7.3963, 3.9158),
-          const LatLng(7.3967, 3.9158),
-          const LatLng(7.3967, 3.9162),
-          const LatLng(7.3963, 3.9162),
-        ],
-      ),
-      Building(
-        id: 'lecture_rooms_11_13',
-        name: 'Lecture Rooms 11-13',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3970, 3.9160),
-        polygonCoordinates: [
-          const LatLng(7.3968, 3.9158),
-          const LatLng(7.3972, 3.9158),
-          const LatLng(7.3972, 3.9162),
-          const LatLng(7.3968, 3.9162),
-        ],
-      ),
-      Building(
-        id: 'lecture_rooms_14_16',
-        name: 'Lecture Rooms 14-16',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3975, 3.9160),
-        polygonCoordinates: [
-          const LatLng(7.3973, 3.9158),
-          const LatLng(7.3977, 3.9158),
-          const LatLng(7.3977, 3.9162),
-          const LatLng(7.3973, 3.9162),
-        ],
-      ),
-      Building(
-        id: 'adeline_hall',
-        name: 'Adeline Hall',
-        type: 'Academic',
-        entrancePoint: const LatLng(7.3950, 3.9170),
-        polygonCoordinates: [
-          const LatLng(7.3948, 3.9168),
-          const LatLng(7.3952, 3.9168),
-          const LatLng(7.3952, 3.9172),
-          const LatLng(7.3948, 3.9172),
+          const LatLng(7.32852510, 3.88169610),
+          const LatLng(7.32821120, 3.88188920),
+          const LatLng(7.32851980, 3.88236130),
+          const LatLng(7.32861560, 3.88230230),
+          const LatLng(7.32865550, 3.88235860),
+          const LatLng(7.32876460, 3.88228890),
+          const LatLng(7.32873000, 3.88222450),
+          const LatLng(7.32885770, 3.88216550),
+          const LatLng(7.32852510, 3.88169610),
         ],
       ),
       Building(
         id: 'conference_center',
         name: 'Conference Center',
         type: 'Academic',
-        entrancePoint: const LatLng(7.3950, 3.9175),
+        entrancePoint: const LatLng(7.32879500, 3.88132500),
         polygonCoordinates: [
-          const LatLng(7.3948, 3.9173),
-          const LatLng(7.3952, 3.9173),
-          const LatLng(7.3952, 3.9177),
-          const LatLng(7.3948, 3.9177),
-        ],
-      ),
-      
-      // Administrative (2)
-      Building(
-        id: 'senate_building',
-        name: 'Senate Building',
-        type: 'Administrative',
-        entrancePoint: const LatLng(7.3955, 3.9155),
-        polygonCoordinates: [
-          const LatLng(7.3953, 3.9153),
-          const LatLng(7.3957, 3.9153),
-          const LatLng(7.3957, 3.9157),
-          const LatLng(7.3953, 3.9157),
+          const LatLng(7.32889650, 3.88140790),
+          const LatLng(7.32878740, 3.88144010),
+          const LatLng(7.32874490, 3.88133680),
+          const LatLng(7.32858790, 3.88139580),
+          const LatLng(7.32881540, 3.88190950),
+          const LatLng(7.32897230, 3.88185850),
+          const LatLng(7.32886460, 3.88160640),
+          const LatLng(7.32891780, 3.88157960),
+          const LatLng(7.32894970, 3.88150710),
+          const LatLng(7.32889650, 3.88140790),
         ],
       ),
       Building(
-        id: 'radio_station',
-        name: 'Radio Station',
-        type: 'Administrative',
-        entrancePoint: const LatLng(7.3960, 3.9155),
+        id: 'college_of_medicine_lecture_hub',
+        name: 'College of Medicine Lecture Hub',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32664667, 3.88017833),
         polygonCoordinates: [
-          const LatLng(7.3958, 3.9153),
-          const LatLng(7.3962, 3.9153),
-          const LatLng(7.3962, 3.9157),
-          const LatLng(7.3958, 3.9157),
-        ],
-      ),
-      
-      // Religious (2)
-      Building(
-        id: 'chapel',
-        name: 'Chapel',
-        type: 'Religious',
-        entrancePoint: const LatLng(7.3965, 3.9155),
-        polygonCoordinates: [
-          const LatLng(7.3963, 3.9153),
-          const LatLng(7.3967, 3.9153),
-          const LatLng(7.3967, 3.9157),
-          const LatLng(7.3963, 3.9157),
+          const LatLng(7.32646950, 3.88009870),
+          const LatLng(7.32594550, 3.88018180),
+          const LatLng(7.32603590, 3.88061640),
+          const LatLng(7.32654670, 3.88052520),
+          const LatLng(7.32646950, 3.88009870),
         ],
       ),
       Building(
-        id: 'mosque',
-        name: 'Mosque',
-        type: 'Religious',
-        entrancePoint: const LatLng(7.3970, 3.9155),
+        id: 'faculty_of_environmental_science',
+        name: 'Faculty of Environmental Science',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32657833, 3.87988667),
         polygonCoordinates: [
-          const LatLng(7.3968, 3.9153),
-          const LatLng(7.3972, 3.9153),
-          const LatLng(7.3972, 3.9157),
-          const LatLng(7.3968, 3.9157),
-        ],
-      ),
-      
-      // Medical (1)
-      Building(
-        id: 'clinic',
-        name: 'Clinic',
-        type: 'Medical',
-        entrancePoint: const LatLng(7.3975, 3.9155),
-        polygonCoordinates: [
-          const LatLng(7.3973, 3.9153),
-          const LatLng(7.3977, 3.9153),
-          const LatLng(7.3977, 3.9157),
-          const LatLng(7.3973, 3.9157),
-        ],
-      ),
-      
-      // Residential (3)
-      Building(
-        id: 'champions_hostel',
-        name: 'Champions Hostel',
-        type: 'Residential',
-        entrancePoint: const LatLng(7.3945, 3.9165),
-        polygonCoordinates: [
-          const LatLng(7.3943, 3.9163),
-          const LatLng(7.3947, 3.9163),
-          const LatLng(7.3947, 3.9167),
-          const LatLng(7.3943, 3.9167),
+          const LatLng(7.32636490, 3.87972930),
+          const LatLng(7.32574100, 3.87982190),
+          const LatLng(7.32579420, 3.88011690),
+          const LatLng(7.32640740, 3.88001360),
+          const LatLng(7.32636490, 3.87972930),
         ],
       ),
       Building(
-        id: 'wisdom_hostel',
-        name: 'Wisdom Hostel',
-        type: 'Residential',
-        entrancePoint: const LatLng(7.3945, 3.9170),
+        id: 'faculty_of_dentistry',
+        name: 'Faculty of Dentistry',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32615667, 3.88145167),
         polygonCoordinates: [
-          const LatLng(7.3943, 3.9168),
-          const LatLng(7.3947, 3.9168),
-          const LatLng(7.3947, 3.9172),
-          const LatLng(7.3943, 3.9172),
+          const LatLng(7.32617020, 3.88093570),
+          const LatLng(7.32571930, 3.88109260),
+          const LatLng(7.32582700, 3.88136750),
+          const LatLng(7.32627530, 3.88120790),
+          const LatLng(7.32617020, 3.88093570),
         ],
       ),
       Building(
-        id: 'independence_hostel',
-        name: 'Independence Hostel',
-        type: 'Residential',
-        entrancePoint: const LatLng(7.3945, 3.9175),
+        id: 'faculty_of_nursing_engineering',
+        name: 'Faculty of Nursing / Engineering',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32564833, 3.88113667),
         polygonCoordinates: [
-          const LatLng(7.3943, 3.9173),
-          const LatLng(7.3947, 3.9173),
-          const LatLng(7.3947, 3.9177),
-          const LatLng(7.3943, 3.9177),
-        ],
-      ),
-      
-      // Recreation & Dining (4)
-      Building(
-        id: 'tasty_vine',
-        name: 'Tasty Vine',
-        type: 'Recreation/Dining',
-        entrancePoint: const LatLng(7.3980, 3.9165),
-        polygonCoordinates: [
-          const LatLng(7.3978, 3.9163),
-          const LatLng(7.3982, 3.9163),
-          const LatLng(7.3982, 3.9167),
-          const LatLng(7.3978, 3.9167),
+          const LatLng(7.32551030, 3.88102460),
+          const LatLng(7.32474950, 3.88127410),
+          const LatLng(7.32488780, 3.88168710),
+          const LatLng(7.32564600, 3.88140820),
+          const LatLng(7.32551030, 3.88102460),
         ],
       ),
       Building(
         id: 'new_tasty_vine',
         name: 'New Tasty Vine',
         type: 'Recreation/Dining',
-        entrancePoint: const LatLng(7.3980, 3.9170),
+        entrancePoint: const LatLng(7.32386500, 3.88203667),
         polygonCoordinates: [
-          const LatLng(7.3978, 3.9168),
-          const LatLng(7.3982, 3.9168),
-          const LatLng(7.3982, 3.9172),
-          const LatLng(7.3978, 3.9172),
+          const LatLng(7.32372880, 3.88197710),
+          const LatLng(7.32352530, 3.88201330),
+          const LatLng(7.32358650, 3.88227480),
+          const LatLng(7.32378600, 3.88222390),
+          const LatLng(7.32372880, 3.88197710),
         ],
       ),
       Building(
-        id: 'cresta',
-        name: 'Cresta',
+        id: 'tasty_vine',
+        name: 'Tasty Vine',
         type: 'Recreation/Dining',
-        entrancePoint: const LatLng(7.3980, 3.9175),
+        entrancePoint: const LatLng(7.32348000, 3.88203333),
         polygonCoordinates: [
-          const LatLng(7.3978, 3.9173),
-          const LatLng(7.3982, 3.9173),
-          const LatLng(7.3982, 3.9177),
-          const LatLng(7.3978, 3.9177),
+          const LatLng(7.32339060, 3.88196240),
+          const LatLng(7.32324430, 3.88198110),
+          const LatLng(7.32333740, 3.88235400),
+          const LatLng(7.32348370, 3.88231910),
+          const LatLng(7.32339060, 3.88196240),
+        ],
+      ),
+      Building(
+        id: 'department_of_computer_science',
+        name: 'Department of Computer Science',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32724167, 3.87705333),
+        polygonCoordinates: [
+          const LatLng(7.32707060, 3.87717820),
+          const LatLng(7.32716110, 3.87716340),
+          const LatLng(7.32714640, 3.87706820),
+          const LatLng(7.32705730, 3.87708960),
+          const LatLng(7.32703870, 3.87701320),
+          const LatLng(7.32670880, 3.87707760),
+          const LatLng(7.32675270, 3.87731230),
+          const LatLng(7.32708130, 3.87724920),
+          const LatLng(7.32707060, 3.87717820),
+        ],
+      ),
+      Building(
+        id: 'radio_station',
+        name: 'Radio Station',
+        type: 'Administrative',
+        entrancePoint: const LatLng(7.32675167, 3.87777167),
+        polygonCoordinates: [
+          const LatLng(7.32670100, 3.87711360),
+          const LatLng(7.32658800, 3.87713240),
+          const LatLng(7.32663720, 3.87741800),
+          const LatLng(7.32673700, 3.87739660),
+          const LatLng(7.32671170, 3.87731070),
+          const LatLng(7.32675270, 3.87731230),
+          const LatLng(7.32670100, 3.87711360),
+        ],
+      ),
+      Building(
+        id: 'lecture_room_14_16',
+        name: 'Lecture Room 14-16',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32823500, 3.87740167),
+        polygonCoordinates: [
+          const LatLng(7.32843080, 3.87726100),
+          const LatLng(7.32822860, 3.87732270),
+          const LatLng(7.32830310, 3.87758560),
+          const LatLng(7.32850790, 3.87753460),
+          const LatLng(7.32843080, 3.87726100),
+        ],
+      ),
+      Building(
+        id: 'adeline_hall',
+        name: 'Adeline Hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32767833, 3.87736667),
+        polygonCoordinates: [
+          const LatLng(7.32789180, 3.87739070),
+          const LatLng(7.32767630, 3.87743900),
+          const LatLng(7.32780270, 3.87799960),
+          const LatLng(7.32803280, 3.87794600),
+          const LatLng(7.32789180, 3.87739070),
+        ],
+      ),
+      Building(
+        id: 'faculty_of_natural_and_applied_science',
+        name: 'Faculty of Natural and Applied Science',
+        type: 'Academic',
+        entrancePoint: const LatLng(7.32735333, 3.87759167),
+        polygonCoordinates: [
+          const LatLng(7.32743850, 3.87756610),
+          const LatLng(7.32738530, 3.87758760),
+          const LatLng(7.32749700, 3.87800330),
+          const LatLng(7.32770190, 3.87794970),
+          const LatLng(7.32759010, 3.87753660),
+          const LatLng(7.32754230, 3.87755000),
+          const LatLng(7.32751030, 3.87746280),
+          const LatLng(7.32742250, 3.87749100),
+          const LatLng(7.32743850, 3.87756610),
+        ],
+      ),
+      Building(
+        id: 'chapel',
+        name: 'Chapel',
+        type: 'Religious',
+        entrancePoint: const LatLng(7.32813333, 3.88142667),
+        polygonCoordinates: [
+          const LatLng(7.32820690, 3.88106030),
+          const LatLng(7.32805530, 3.88115960),
+          const LatLng(7.32837180, 3.88166650),
+          const LatLng(7.32853680, 3.88155920),
+          const LatLng(7.32820690, 3.88106030),
         ],
       ),
       Building(
         id: 'stadium',
         name: 'Stadium',
         type: 'Recreation/Dining',
-        entrancePoint: const LatLng(7.3980, 3.9160),
+        entrancePoint: const LatLng(7.32668833, 3.87907333),
         polygonCoordinates: [
-          const LatLng(7.3978, 3.9158),
-          const LatLng(7.3982, 3.9158),
-          const LatLng(7.3982, 3.9162),
-          const LatLng(7.3978, 3.9162),
+          const LatLng(7.32750050, 3.87860190),
+          const LatLng(7.32671300, 3.87917050),
+          const LatLng(7.32730890, 3.88072620),
+          const LatLng(7.32825070, 3.88016830),
+          const LatLng(7.32794210, 3.87922420),
+          const LatLng(7.32769200, 3.87868240),
+          const LatLng(7.32750050, 3.87860190),
         ],
       ),
-      
-      // Facilities (1)
       Building(
-        id: 'car_park',
-        name: 'Car Park',
-        type: 'Facilities',
-        entrancePoint: const LatLng(7.3940, 3.9160),
+        id: 'wisdom_hostel',
+        name: 'Wisdom Hostel',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32611333, 3.87800500),
         polygonCoordinates: [
-          const LatLng(7.3938, 3.9158),
-          const LatLng(7.3942, 3.9158),
-          const LatLng(7.3942, 3.9162),
-          const LatLng(7.3938, 3.9162),
+          const LatLng(7.32571700, 3.87774400),
+          const LatLng(7.32522750, 3.87769700),
+          const LatLng(7.32520750, 3.87792100),
+          const LatLng(7.32569300, 3.87795590),
+          const LatLng(7.32571700, 3.87774400),
+        ],
+      ),
+      Building(
+        id: 'champions_hostel',
+        name: 'Champions Hostel',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32611333, 3.87800500),
+        polygonCoordinates: [
+          const LatLng(7.32626900, 3.87773600),
+          const LatLng(7.32587000, 3.87771180),
+          const LatLng(7.32585670, 3.87791840),
+          const LatLng(7.32625040, 3.87794250),
+          const LatLng(7.32626900, 3.87773600),
+        ],
+      ),
+      Building(
+        id: 'independence_hostel',
+        name: 'Independence Hostel',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32611333, 3.87800500),
+        polygonCoordinates: [
+          const LatLng(7.32584420, 3.87808000),
+          const LatLng(7.32524300, 3.87797540),
+          const LatLng(7.32520040, 3.87822490),
+          const LatLng(7.32580430, 3.87830800),
+          const LatLng(7.32584420, 3.87808000),
+        ],
+      ),
+      Building(
+        id: 'block_l',
+        name: 'Block L',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32367167, 3.88113333),
+        polygonCoordinates: [
+          const LatLng(7.32347970, 3.88123580),
+          const LatLng(7.32345310, 3.88123980),
+          const LatLng(7.32326420, 3.88130150),
+          const LatLng(7.32330550, 3.88145440),
+          const LatLng(7.32339190, 3.88141680),
+          const LatLng(7.32342390, 3.88151200),
+          const LatLng(7.32347710, 3.88149600),
+          const LatLng(7.32355950, 3.88175880),
+          const LatLng(7.32365260, 3.88173470),
+          const LatLng(7.32357420, 3.88148520),
+          const LatLng(7.32347970, 3.88123580),
+        ],
+      ),
+      Building(
+        id: 'block_c',
+        name: 'Block C',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32311667, 3.88195167),
+        polygonCoordinates: [
+          const LatLng(7.32320480, 3.88132640),
+          const LatLng(7.32298000, 3.88138680),
+          const LatLng(7.32300790, 3.88148200),
+          const LatLng(7.32313690, 3.88144580),
+          const LatLng(7.32323670, 3.88175560),
+          const LatLng(7.32310630, 3.88178910),
+          const LatLng(7.32314360, 3.88187630),
+          const LatLng(7.32336570, 3.88181320),
+          const LatLng(7.32320480, 3.88132640),
+        ],
+      ),
+      Building(
+        id: 'block_u',
+        name: 'Block U',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32297333, 3.88199333),
+        polygonCoordinates: [
+          const LatLng(7.32309500, 3.88189060),
+          const LatLng(7.32294460, 3.88141450),
+          const LatLng(7.32266270, 3.88149630),
+          const LatLng(7.32282490, 3.88197510),
+          const LatLng(7.32293130, 3.88194020),
+          const LatLng(7.32281430, 3.88162370),
+          const LatLng(7.32288350, 3.88159960),
+          const LatLng(7.32298720, 3.88192680),
+          const LatLng(7.32309500, 3.88189060),
+        ],
+      ),
+      Building(
+        id: 'block_i',
+        name: 'Block I',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32281167, 3.88199167),
+        polygonCoordinates: [
+          const LatLng(7.32259080, 3.88153520),
+          const LatLng(7.32248570, 3.88156070),
+          const LatLng(7.32264670, 3.88203810),
+          const LatLng(7.32275180, 3.88201130),
+          const LatLng(7.32259080, 3.88153520),
+        ],
+      ),
+      Building(
+        id: 'exodus',
+        name: 'Exodus',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32418333, 3.88303833),
+        polygonCoordinates: [
+          const LatLng(7.32420020, 3.88305190),
+          const LatLng(7.32403790, 3.88317790),
+          const LatLng(7.32481210, 3.88401750),
+          const LatLng(7.32494780, 3.88388070),
+          const LatLng(7.32420020, 3.88305190),
+        ],
+      ),
+      Building(
+        id: 'citrus',
+        name: 'Citrus',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32378000, 3.88354333),
+        polygonCoordinates: [
+          const LatLng(7.32388550, 3.88352320),
+          const LatLng(7.32372450, 3.88366400),
+          const LatLng(7.32397990, 3.88392550),
+          const LatLng(7.32413560, 3.88380080),
+          const LatLng(7.32388550, 3.88352320),
+        ],
+      ),
+      Building(
+        id: 'gym',
+        name: 'Gym',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32412500, 3.88248333),
+        polygonCoordinates: [
+          const LatLng(7.32397530, 3.88245920),
+          const LatLng(7.32385690, 3.88251420),
+          const LatLng(7.32401520, 3.88276360),
+          const LatLng(7.32412820, 3.88270060),
+          const LatLng(7.32397530, 3.88245920),
+        ],
+      ),
+      Building(
+        id: 'achievers',
+        name: 'Achievers',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32753167, 3.87821000),
+        polygonCoordinates: [
+          const LatLng(7.32737320, 3.87826070),
+          const LatLng(7.32679860, 3.87863890),
+          const LatLng(7.32694490, 3.87882400),
+          const LatLng(7.32749290, 3.87845120),
+          const LatLng(7.32737320, 3.87826070),
+        ],
+      ),
+      Building(
+        id: 'tasty_delight',
+        name: 'Tasty Delight',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32611833, 3.87812500),
+        polygonCoordinates: [
+          const LatLng(7.32610910, 3.87804010),
+          const LatLng(7.32595350, 3.87803870),
+          const LatLng(7.32595210, 3.87816340),
+          const LatLng(7.32610110, 3.87817150),
+          const LatLng(7.32610910, 3.87804010),
+        ],
+      ),
+      Building(
+        id: 'enterprise',
+        name: 'Enterprise',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32412500, 3.88248333),
+        polygonCoordinates: [
+          const LatLng(7.32402500, 3.88238333),
+          const LatLng(7.32422500, 3.88238333),
+          const LatLng(7.32422500, 3.88258333),
+          const LatLng(7.32402500, 3.88258333),
+        ],
+      ),
+      Building(
+        id: 'sport_complex',
+        name: 'Sport Complex',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32795500, 3.88116000),
+        polygonCoordinates: [
+          const LatLng(7.32790640, 3.88058000),
+          const LatLng(7.32740090, 3.88091260),
+          const LatLng(7.32760310, 3.88123450),
+          const LatLng(7.32809260, 3.88089650),
+          const LatLng(7.32790640, 3.88058000),
+        ],
+      ),
+      Building(
+        id: 'olive_hostel',
+        name: 'Olive Hostel',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32391333, 3.88325833),
+        polygonCoordinates: [
+          const LatLng(7.32398980, 3.88325600),
+          const LatLng(7.32387270, 3.88337410),
+          const LatLng(7.32461760, 3.88421090),
+          const LatLng(7.32478790, 3.88407140),
+          const LatLng(7.32398980, 3.88325600),
+        ],
+      ),
+      Building(
+        id: 'cresta',
+        name: 'Cresta',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32317000, 3.88029667),
+        polygonCoordinates: [
+          const LatLng(7.32313780, 3.88009890),
+          const LatLng(7.32288770, 3.88010960),
+          const LatLng(7.32287710, 3.87996750),
+          const LatLng(7.32273880, 3.87997820),
+          const LatLng(7.32277070, 3.88026520),
+          const LatLng(7.32314580, 3.88024640),
+          const LatLng(7.32313780, 3.88009890),
+        ],
+      ),
+      Building(
+        id: 'jackson_hall',
+        name: 'Jackson hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32351333, 3.88110000),
+        polygonCoordinates: [
+          const LatLng(7.32322140, 3.88036030),
+          const LatLng(7.32305640, 3.88038450),
+          const LatLng(7.32327720, 3.88109260),
+          const LatLng(7.32344220, 3.88105230),
+          const LatLng(7.32322140, 3.88036030),
+        ],
+      ),
+      Building(
+        id: 'almond_hall',
+        name: 'Almond hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32312333, 3.88118833),
+        polygonCoordinates: [
+          const LatLng(7.32309110, 3.88073780),
+          const LatLng(7.32299660, 3.88074650),
+          const LatLng(7.32292350, 3.88076190),
+          const LatLng(7.32305120, 3.88114820),
+          const LatLng(7.32320280, 3.88109450),
+          const LatLng(7.32309110, 3.88073780),
+        ],
+      ),
+      Building(
+        id: 'peace_hall_1',
+        name: 'Peace hall 1',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32300333, 3.88110833),
+        polygonCoordinates: [
+          const LatLng(7.32290540, 3.88091090),
+          const LatLng(7.32276440, 3.88095520),
+          const LatLng(7.32286420, 3.88122740),
+          const LatLng(7.32299850, 3.88118310),
+          const LatLng(7.32290540, 3.88091090),
+        ],
+      ),
+      Building(
+        id: 'camp_david_1',
+        name: 'Camp David 1',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32279167, 3.88132333),
+        polygonCoordinates: [
+          const LatLng(7.32265780, 3.88085260),
+          const LatLng(7.32252210, 3.88089560),
+          const LatLng(7.32265110, 3.88129920),
+          const LatLng(7.32278680, 3.88124830),
+          const LatLng(7.32265780, 3.88085260),
+        ],
+      ),
+      Building(
+        id: 'camp_david_3',
+        name: 'Camp David 3',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32269000, 3.88134333),
+        polygonCoordinates: [
+          const LatLng(7.32246090, 3.88092370),
+          const LatLng(7.32232520, 3.88095990),
+          const LatLng(7.32245690, 3.88135150),
+          const LatLng(7.32258600, 3.88131530),
+          const LatLng(7.32246090, 3.88092370),
+        ],
+      ),
+      Building(
+        id: 'camp_david_5',
+        name: 'Camp David 5',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32265667, 3.88143000),
+        polygonCoordinates: [
+          const LatLng(7.32226140, 3.88098270),
+          const LatLng(7.32212840, 3.88102030),
+          const LatLng(7.32224680, 3.88142260),
+          const LatLng(7.32239310, 3.88138240),
+          const LatLng(7.32226140, 3.88098270),
+        ],
+      ),
+      Building(
+        id: 'peace_hall_2',
+        name: 'Peace hall 2',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32289000, 3.88073000),
+        polygonCoordinates: [
+          const LatLng(7.32278170, 3.88056890),
+          const LatLng(7.32265530, 3.88060240),
+          const LatLng(7.32275240, 3.88088010),
+          const LatLng(7.32288140, 3.88084650),
+          const LatLng(7.32278170, 3.88056890),
+        ],
+      ),
+      Building(
+        id: 'hibiscus_hall_1',
+        name: 'Hibiscus hall 1',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32258000, 3.88038500),
+        polygonCoordinates: [
+          const LatLng(7.32251500, 3.88019780),
+          const LatLng(7.32223830, 3.88022190),
+          const LatLng(7.32227160, 3.88037750),
+          const LatLng(7.32253230, 3.88033190),
+          const LatLng(7.32251500, 3.88019780),
+        ],
+      ),
+      Building(
+        id: 'hibiscus_hall_2',
+        name: 'Hibiscus hall 2',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32258000, 3.88038500),
+        polygonCoordinates: [
+          const LatLng(7.32250440, 3.88014420),
+          const LatLng(7.32248710, 3.88000200),
+          const LatLng(7.32221840, 3.88004490),
+          const LatLng(7.32224100, 3.88019240),
+          const LatLng(7.32250440, 3.88014420),
+        ],
+      ),
+      Building(
+        id: 'pg_hostel',
+        name: 'PG Hostel',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32224333, 3.88045500),
+        polygonCoordinates: [
+          const LatLng(7.32205740, 3.88011330),
+          const LatLng(7.32162380, 3.88036810),
+          const LatLng(7.32172760, 3.88052910),
+          const LatLng(7.32214520, 3.88025810),
+          const LatLng(7.32205740, 3.88011330),
+        ],
+      ),
+      Building(
+        id: 'rebelation_hall_2',
+        name: 'Rebelation hall 2',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32352833, 3.88265167),
+        polygonCoordinates: [
+          const LatLng(7.32381000, 3.88253870),
+          const LatLng(7.32354130, 3.88261380),
+          const LatLng(7.32359720, 3.88275600),
+          const LatLng(7.32386060, 3.88266750),
+          const LatLng(7.32381000, 3.88253870),
+        ],
+      ),
+      Building(
+        id: 'genesis_hall',
+        name: 'Genesis hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32378000, 3.88386000),
+        polygonCoordinates: [
+          const LatLng(7.32351770, 3.88368470),
+          const LatLng(7.32332620, 3.88383490),
+          const LatLng(7.32373050, 3.88428020),
+          const LatLng(7.32391410, 3.88410850),
+          const LatLng(7.32351770, 3.88368470),
+        ],
+      ),
+      Building(
+        id: 'cedars_hall',
+        name: 'Cedars hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32405333, 3.88414833),
+        polygonCoordinates: [
+          const LatLng(7.32424930, 3.88393010),
+          const LatLng(7.32406840, 3.88408570),
+          const LatLng(7.32442620, 3.88447330),
+          const LatLng(7.32461910, 3.88430560),
+          const LatLng(7.32424930, 3.88393010),
+        ],
+      ),
+      Building(
+        id: 'mango_hall',
+        name: 'Mango hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32436500, 3.88444833),
+        polygonCoordinates: [
+          const LatLng(7.32402320, 3.88412860),
+          const LatLng(7.32384090, 3.88430430),
+          const LatLng(7.32420670, 3.88468250),
+          const LatLng(7.32439030, 3.88452960),
+          const LatLng(7.32402320, 3.88412860),
+        ],
+      ),
+      Building(
+        id: 'apple_hall',
+        name: 'Apple hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32359500, 3.88309833),
+        polygonCoordinates: [
+          const LatLng(7.32332050, 3.88251570),
+          const LatLng(7.32309430, 3.88257070),
+          const LatLng(7.32333910, 3.88327750),
+          const LatLng(7.32340960, 3.88328290),
+          const LatLng(7.32349070, 3.88325870),
+          const LatLng(7.32355720, 3.88322650),
+          const LatLng(7.32349740, 3.88307900),
+          const LatLng(7.32356790, 3.88305490),
+          const LatLng(7.32342690, 3.88263110),
+          const LatLng(7.32336570, 3.88265250),
+          const LatLng(7.32332050, 3.88251570),
+        ],
+      ),
+      Building(
+        id: 'lemon_1_hall',
+        name: 'Lemon 1 hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32513333, 3.88382167),
+        polygonCoordinates: [
+          const LatLng(7.32501320, 3.88396720),
+          const LatLng(7.32468070, 3.88428240),
+          const LatLng(7.32478580, 3.88439770),
+          const LatLng(7.32512630, 3.88407050),
+          const LatLng(7.32501320, 3.88396720),
+        ],
+      ),
+      Building(
+        id: 'lemon_2_hall',
+        name: 'Lemon 2 Hall',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32539667, 3.88407167),
+        polygonCoordinates: [
+          const LatLng(7.32515950, 3.88411480),
+          const LatLng(7.32482700, 3.88442860),
+          const LatLng(7.32492680, 3.88453180),
+          const LatLng(7.32527260, 3.88421670),
+          const LatLng(7.32515950, 3.88411480),
+        ],
+      ),
+      Building(
+        id: 'the_chronicles',
+        name: 'The chronicles',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32539667, 3.88407167),
+        polygonCoordinates: [
+          const LatLng(7.32529667, 3.88397167),
+          const LatLng(7.32549667, 3.88397167),
+          const LatLng(7.32549667, 3.88417167),
+          const LatLng(7.32529667, 3.88417167),
+        ],
+      ),
+      Building(
+        id: 'camp_david_2',
+        name: 'Camp David 2',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32279167, 3.88132333),
+        polygonCoordinates: [
+          const LatLng(7.32251550, 3.88043560),
+          const LatLng(7.32237980, 3.88046100),
+          const LatLng(7.32251280, 3.88086200),
+          const LatLng(7.32263780, 3.88081910),
+          const LatLng(7.32251550, 3.88043560),
+        ],
+      ),
+      Building(
+        id: 'camp_david_4',
+        name: 'Camp David 4',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32269000, 3.88134333),
+        polygonCoordinates: [
+          const LatLng(7.32231460, 3.88048920),
+          const LatLng(7.32218420, 3.88052270),
+          const LatLng(7.32231860, 3.88092370),
+          const LatLng(7.32245030, 3.88088350),
+          const LatLng(7.32231460, 3.88048920),
+        ],
+      ),
+      Building(
+        id: 'camp_david_6',
+        name: 'Camp David 6',
+        type: 'Residential',
+        entrancePoint: const LatLng(7.32265667, 3.88143000),
+        polygonCoordinates: [
+          const LatLng(7.32212700, 3.88055360),
+          const LatLng(7.32198210, 3.88058310),
+          const LatLng(7.32211640, 3.88099750),
+          const LatLng(7.32225210, 3.88095320),
+          const LatLng(7.32212700, 3.88055360),
+        ],
+      ),
+      Building(
+        id: 'enterprise_field',
+        name: 'Enterprise field',
+        type: 'Recreation/Dining',
+        entrancePoint: const LatLng(7.32380333, 3.88180333),
+        polygonCoordinates: [
+          const LatLng(7.32386170, 3.88165170),
+          const LatLng(7.32417570, 3.88233830),
+          const LatLng(7.32488330, 3.88201650),
+          const LatLng(7.32468110, 3.88139150),
+          const LatLng(7.32386170, 3.88165170),
         ],
       ),
     ];
   }
 
-  /// Get building by ID
   static Building? getBuildingById(String id) {
-    try {
-      return getAllBuildings().firstWhere(
-        (building) => building.id == id,
-      );
-    } catch (e) {
-      return null;
-    }
+    try { return getAllBuildings().firstWhere((b) => b.id == id); } catch (e) { return null; }
   }
 
-  /// Get building by name
   static Building? getBuildingByName(String name) {
-    try {
-      return getAllBuildings().firstWhere(
-        (building) => building.name.toLowerCase() == name.toLowerCase(),
-      );
-    } catch (e) {
-      return null;
-    }
+    try { return getAllBuildings().firstWhere((b) => b.name.toLowerCase() == name.toLowerCase()); } catch (e) { return null; }
   }
 
-  /// Search buildings by query
   static List<Building> searchBuildings(String query) {
-    final lowerQuery = query.toLowerCase();
-    return getAllBuildings().where((building) {
-      return building.name.toLowerCase().contains(lowerQuery) ||
-          building.type.toLowerCase().contains(lowerQuery);
-    }).toList();
+    final q = query.toLowerCase();
+    return getAllBuildings().where((b) => b.name.toLowerCase().contains(q) || b.type.toLowerCase().contains(q)).toList();
   }
-}
 
+  /// Retained for API compatibility — data is now hardcoded from KML, no async load needed.
+  static Future<List<Building>> loadFromKml() async {
+    return getAllBuildings();
+  }
+
+
+}
