@@ -82,7 +82,7 @@ class LocationService {
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
+        distanceFilter: 3, // Smooth enough for walking turn-by-turn
       ),
     );
   }

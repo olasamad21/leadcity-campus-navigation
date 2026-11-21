@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart'; // <--- ADD THIS IMPORT
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../data/building_categories.dart';
+import 'building_category.dart';
 
 /// Building data model representing a campus building
 class Building {
@@ -70,6 +72,10 @@ class Building {
       geodesic: false,
     );
   }
+
+  /// Owner-assigned category for this building name, falling back to [type].
+  BuildingCategory get category =>
+      categoryForBuildingName(name) ?? BuildingCategory.fromType(type);
 
   @override
   String toString() => 'Building(name: $name, type: $type)';

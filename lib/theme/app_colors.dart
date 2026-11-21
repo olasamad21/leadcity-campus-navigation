@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../models/building_category.dart';
+
 /// Brand + semantic color palette.
 ///
 /// Navy primary from the Lead City crest, with a warm gold accent used
@@ -66,30 +68,9 @@ class AppColors {
   static const Color religious = Color(0xFF8A5CD1);
   static const Color facilities = Color(0xFF6C7891);
 
-  static Color getBuildingTypeColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'academic':
-        return academic;
-      case 'administrative':
-      case 'admin':
-        return administrative;
-      case 'residential':
-        return residential;
-      case 'recreation':
-      case 'dining':
-      case 'recreation/dining':
-        return recreationDining;
-      case 'medical':
-        return medical;
-      case 'religious':
-        return religious;
-      case 'facilities':
-      case 'facility':
-        return facilities;
-      default:
-        return academic;
-    }
-  }
+  /// Colour for a building type string (delegates to [BuildingCategory]).
+  static Color getBuildingTypeColor(String type) =>
+      BuildingCategory.fromType(type).color;
 
   static Color getBuildingTypeColorWithOpacity(String type, double opacity) {
     return getBuildingTypeColor(type).withValues(alpha: opacity);
