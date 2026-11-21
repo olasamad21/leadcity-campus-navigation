@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../theme/map_styles.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/campus_graph.dart';
 import '../models/building.dart';
@@ -179,6 +180,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
           Expanded(
             flex: 5,
             child: GoogleMap(
+              style: MapStyles.of(context),
               initialCameraPosition: CameraPosition(
                 target: campus.polylinePoints.isNotEmpty
                     ? campus.polylinePoints.first

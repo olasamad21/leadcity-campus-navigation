@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../theme/map_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/building.dart';
@@ -290,6 +291,7 @@ class _MapScreenState extends State<MapScreen> with AutomaticKeepAliveClientMixi
       body: Stack(
         children: [
           GoogleMap(
+            style: MapStyles.of(context),
             initialCameraPosition: const CameraPosition(target: LatLng(7.3285, 3.8790), zoom: 16.5),
             onMapCreated: (controller) => _mapController = controller,
             onTap: _onMapTap,

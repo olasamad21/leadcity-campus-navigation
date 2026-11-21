@@ -31,6 +31,10 @@ class _LeadCityNavigationAppState extends State<LeadCityNavigationApp> {
     return MaterialApp(
       title: 'Lead City Navigation',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      // Light until every screen is migrated to theme colours (Phase 2),
+      // then switch to ThemeMode.system.
+      themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
     );

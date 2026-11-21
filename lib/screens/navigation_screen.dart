@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' show cos, pi;
 import 'package:flutter/material.dart';
+import '../theme/map_styles.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/building.dart';
 import '../services/navigation_service.dart';
@@ -246,6 +247,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         body: Stack(
           children: [
             GoogleMap(
+              style: MapStyles.of(context),
               initialCameraPosition: CameraPosition(
                 target: widget.routeInfo.startLocation,
                 zoom: 17,
