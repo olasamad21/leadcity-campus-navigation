@@ -77,12 +77,22 @@ class CampusGraph {
   List<LatLng> getRouteCoordinates(List<String> nodeIds) =>
       nodeIds.map((id) => nodes[id]?.position).whereType<LatLng>().toList();
 
+  /// True for instructions that are spoken during navigation (left/right turns).
+  /// Shared by [getRouteInstructions] and the voice controller so the
+  /// instruction list and its maneuver anchors always stay aligned.
+  static bool isTurnInstruction(String? instruction) {
+    if (instruction == null) return false;
+    final lower = instruction.toLowerCase();
+    return lower.contains('left') || lower.contains('right');
+  }
+
   List<String> getRouteInstructions(List<String> nodeIds) {
     final instructions = <String>[];
     for (int i = 0; i < nodeIds.length - 1; i++) {
       final instr = getEdgeInstruction(nodeIds[i], nodeIds[i + 1]);
-      if (instr != null && (instr.contains('left') || instr.contains('right')))
-        instructions.add(instr);
+      if (isTurnInstruction(instr)) {
+        instructions.add(instr!);
+      }
     }
     return instructions;
   }

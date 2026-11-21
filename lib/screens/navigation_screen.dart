@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show cos, pi;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/building.dart';
@@ -70,6 +71,59 @@ class _NavigationScreenState extends State<NavigationScreen> {
     _locationSubscription = null;
   }
 
+  /// Projects [rawPosition] onto the nearest point on the route polyline.
+  /// If that point is farther than 25 m, returns [rawPosition] unchanged.
+  LatLng _snapToRoute(LatLng rawPosition) {
+    final points = widget.routeInfo.polylinePoints;
+    if (points.length < 2) {
+      return rawPosition;
+    }
+
+    const maxSnapMeters = 25.0;
+    LatLng? bestPoint;
+    var bestDistanceMeters = double.infinity;
+
+    for (var i = 0; i < points.length - 1; i++) {
+      final a = points[i];
+      final b = points[i + 1];
+      final midLatDeg = (a.latitude + b.latitude) * 0.5;
+      final k = cos(midLatDeg * pi / 180);
+
+      final ax = a.longitude * k;
+      final ay = a.latitude;
+      final bx = b.longitude * k;
+      final by = b.latitude;
+      final px = rawPosition.longitude * k;
+      final py = rawPosition.latitude;
+
+      final dx = bx - ax;
+      final dy = by - ay;
+      final lenSq = dx * dx + dy * dy;
+
+      final LatLng candidate;
+      if (lenSq < 1e-18) {
+        candidate = a;
+      } else {
+        var t = ((px - ax) * dx + (py - ay) * dy) / lenSq;
+        t = t.clamp(0.0, 1.0);
+        final cx = ax + t * dx;
+        final cy = ay + t * dy;
+        candidate = LatLng(cy, cx / k);
+      }
+
+      final d = _locationService.calculateDistance(rawPosition, candidate);
+      if (d < bestDistanceMeters) {
+        bestDistanceMeters = d;
+        bestPoint = candidate;
+      }
+    }
+
+    if (bestPoint == null || bestDistanceMeters > maxSnapMeters) {
+      return rawPosition;
+    }
+    return bestPoint;
+  }
+
   void _finishNavigationSession() {
     _stopGpsUpdates();
     _voiceNavigationController.reset();
@@ -81,6 +135,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
     _locationSubscription = positionStream.listen((position) {
       final latLng = _locationService.positionToLatLng(position);
+      final snappedLatLng = _snapToRoute(latLng);
       _voiceNavigationController.onLocationUpdate(latLng);
       final arrived = _voiceNavigationController.checkArrival(
         latLng,
@@ -88,7 +143,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
       );
 
       setState(() {
-        _currentLocation = latLng;
+        _currentLocation = snappedLatLng;
       });
 
       _updateCameraPosition();
@@ -195,6 +250,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 target: widget.routeInfo.startLocation,
                 zoom: 17,
               ),
+              minMaxZoomPreference: const MinMaxZoomPreference(15.0, 18.5),
               onMapCreated: (controller) {
                 _mapController = controller;
               },

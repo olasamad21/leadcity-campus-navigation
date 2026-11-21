@@ -32,7 +32,7 @@ class _MapScreenState extends State<MapScreen> with AutomaticKeepAliveClientMixi
   static bool _hasGeneratedIcons = false;
 
   // Lead City University approximate center
-  static const LatLng _campusCenter = LatLng(7.3964, 3.9167);
+  static const LatLng _campusCenter = BuildingsData.campusCenter;
 
   @override
   // FIX #1: Required for KeepAlive

@@ -52,13 +52,15 @@ class VoiceNavigationController {
 
   bool _hasAnnouncedArrival = false;
 
-  /// LatLng at the destination node for each voiced graph edge along [route].
+  /// LatLng at the destination node for each turn edge along [route].
+  /// Uses the same filter as [CampusGraph.getRouteInstructions] so anchors
+  /// line up one-to-one with [CampusRoute.instructions].
   static List<LatLng> _rawAnchorsFromGraph(CampusRoute route, CampusGraph graph) {
     final anchors = <LatLng>[];
     final ids = route.nodeIds;
     for (var k = 0; k < ids.length - 1; k++) {
       final spoken = graph.getEdgeInstruction(ids[k], ids[k + 1]);
-      if (spoken == null || spoken.trim().isEmpty) continue;
+      if (!CampusGraph.isTurnInstruction(spoken)) continue;
       final node = graph.nodes[ids[k + 1]];
       if (node != null) {
         anchors.add(node.position);
@@ -79,8 +81,8 @@ class VoiceNavigationController {
       final text = _instructionTexts[i];
 
       // Only fire for turn instructions.
+      if (!CampusGraph.isTurnInstruction(text)) continue;
       final lowerText = text.toLowerCase();
-      if (!lowerText.contains('left') && !lowerText.contains('right')) continue;
 
       final anchor = _instructionAnchors[i];
       final distanceM = haversineDistanceMetersAnchor(currentPosition, anchor);

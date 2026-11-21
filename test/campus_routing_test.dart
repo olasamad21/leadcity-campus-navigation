@@ -143,13 +143,13 @@ CampusGraph _voiceGraph() {
         fromId: 'v0',
         toId: 'v1',
         distanceMeters: 40,
-        voiceInstruction: 'Step one',
+        voiceInstruction: 'Turn left',
       ),
       CampusEdge(
         fromId: 'v1',
         toId: 'v2',
         distanceMeters: 40,
-        voiceInstruction: 'Step two',
+        voiceInstruction: 'Turn right',
       ),
     ],
   );
@@ -242,7 +242,7 @@ void main() {
         estimatedWalkingMinutes: 1,
         nodeIds: ['v0', 'v1', 'v2'],
       );
-      expect(voiceRoute.instructions, ['Step one', 'Step two']);
+      expect(voiceRoute.instructions, ['Turn left', 'Turn right']);
     });
 
     /// Use real singleton; initialization is optional for [speak] no-ops in tests.
@@ -254,16 +254,16 @@ void main() {
           campusGraphOverride: voiceGraph,
         );
 
-    test('instruction triggers when within 20 m of manoeuvre node', () {
+    test('turn instruction fires its "now" cue within 15 m of manoeuvre node', () {
       final vc = controller();
       final v1Anchor = voiceGraph.nodes['v1']!.position;
 
       vc.onLocationUpdate(offsetNorth(v1Anchor, 10));
       expect(vc.nextInstructionIndex, 1);
-      expect(vc.nextInstructionText, 'Step two');
+      expect(vc.nextInstructionText, 'Turn right');
     });
 
-    test('instruction does not trigger when more than ~20 m from manoeuvre node',
+    test('turn instruction does not fire when 25 m from manoeuvre node',
         () {
       final vc = controller();
       final v1Anchor = voiceGraph.nodes['v1']!.position;
@@ -272,11 +272,11 @@ void main() {
         offsetNorth(v1Anchor, 25),
         v1Anchor,
       );
-      expect(d > 20.0, isTrue);
+      expect(d > 15.0, isTrue);
 
       vc.onLocationUpdate(offsetNorth(v1Anchor, 25));
       expect(vc.nextInstructionIndex, 0);
-      expect(vc.nextInstructionText, 'Step one');
+      expect(vc.nextInstructionText, 'Turn left');
     });
 
     test('spoken instruction sequence is never repeated once advanced', () {
@@ -293,7 +293,7 @@ void main() {
       }
 
       expect(vc.nextInstructionIndex, 1);
-      expect(vc.nextInstructionText, 'Step two');
+      expect(vc.nextInstructionText, 'Turn right');
     });
 
     test('checkArrival true within 15 m and false when far away', () {
@@ -318,6 +318,56 @@ void main() {
         vc.checkArrival(LatLng(55.0000, 12.0000), dest),
         isFalse,
       );
+    });
+
+    test('non-turn instructions are skipped without shifting turn anchors', () {
+      const a = LatLng(52.0000, 6.5000);
+      const b = LatLng(52.00030, 6.5000);
+      const c = LatLng(52.00060, 6.5000);
+      final graph = CampusGraph(
+        nodes: {
+          'a': CampusNode(id: 'a', position: a, connectedNodeIds: ['b']),
+          'b': CampusNode(id: 'b', position: b, connectedNodeIds: ['a', 'c']),
+          'c': CampusNode(id: 'c', position: c, connectedNodeIds: ['b']),
+        },
+        edges: const [
+          CampusEdge(
+            fromId: 'a',
+            toId: 'b',
+            distanceMeters: 33,
+            voiceInstruction: 'Continue straight',
+          ),
+          CampusEdge(
+            fromId: 'b',
+            toId: 'c',
+            distanceMeters: 33,
+            voiceInstruction: 'Turn left',
+          ),
+        ],
+      );
+      final ids = ['a', 'b', 'c'];
+      final route = CampusRoute(
+        polylinePoints: graph.getRouteCoordinates(ids),
+        instructions: graph.getRouteInstructions(ids),
+        totalDistanceMeters: 66,
+        estimatedWalkingMinutes: 1,
+        nodeIds: ids,
+      );
+      expect(route.instructions, ['Turn left']);
+
+      final vc = VoiceNavigationController(
+        route,
+        VoiceService(),
+        campusGraphOverride: graph,
+      );
+
+      // Standing at 'b' must not fire: the turn's anchor is 'c', not 'b'.
+      vc.onLocationUpdate(b);
+      expect(vc.nextInstructionIndex, 0);
+
+      vc.onLocationUpdate(offsetNorth(c, -5));
+      expect(vc.nextInstructionIndex, 1);
+      expect(vc.nextInstructionText, isNull);
     });
   });
 }

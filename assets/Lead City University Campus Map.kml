@@ -45,34 +45,6 @@
         <styleUrl>#icon-1899-0288D1-nodesc-highlight</styleUrl>
       </Pair>
     </StyleMap>
-    <Style id="line-9C27B0-1200-nodesc-normal">
-      <LineStyle>
-        <color>ffb0279c</color>
-        <width>1.2</width>
-      </LineStyle>
-      <BalloonStyle>
-        <text><![CDATA[<h3>$[name]</h3>]]></text>
-      </BalloonStyle>
-    </Style>
-    <Style id="line-9C27B0-1200-nodesc-highlight">
-      <LineStyle>
-        <color>ffb0279c</color>
-        <width>1.8</width>
-      </LineStyle>
-      <BalloonStyle>
-        <text><![CDATA[<h3>$[name]</h3>]]></text>
-      </BalloonStyle>
-    </Style>
-    <StyleMap id="line-9C27B0-1200-nodesc">
-      <Pair>
-        <key>normal</key>
-        <styleUrl>#line-9C27B0-1200-nodesc-normal</styleUrl>
-      </Pair>
-      <Pair>
-        <key>highlight</key>
-        <styleUrl>#line-9C27B0-1200-nodesc-highlight</styleUrl>
-      </Pair>
-    </StyleMap>
     <Style id="poly-000000-1200-77-nodesc-normal">
       <LineStyle>
         <color>ff000000</color>
@@ -240,17 +212,6 @@
         </Polygon>
       </Placemark>
       <Placemark>
-        <name>Enterprise</name>
-        <styleUrl>#line-9C27B0-1200-nodesc</styleUrl>
-        <LineString>
-          <tessellate>1</tessellate>
-          <coordinates>
-            3.8824063,7.3241303,0
-            3.8825135,7.3241888,0
-          </coordinates>
-        </LineString>
-      </Placemark>
-      <Placemark>
         <name>Faculty of Social science</name>
         <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
         <Polygon>
@@ -305,7 +266,7 @@
         </Polygon>
       </Placemark>
       <Placemark>
-        <name>Senate Building </name>
+        <name>Senate Building</name>
         <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
         <Polygon>
           <outerBoundaryIs>
@@ -345,7 +306,7 @@
         </Polygon>
       </Placemark>
       <Placemark>
-        <name>Polygon 24</name>
+        <name>Conference Center</name>
         <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
         <Polygon>
           <outerBoundaryIs>
@@ -386,7 +347,7 @@
         </Polygon>
       </Placemark>
       <Placemark>
-        <name>Law Theatre </name>
+        <name>Law Theatre</name>
         <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
         <Polygon>
           <outerBoundaryIs>
@@ -502,7 +463,7 @@
         </Polygon>
       </Placemark>
       <Placemark>
-        <name>Faculty of Natural and Applied Science </name>
+        <name>Faculty of Natural and Applied Science</name>
         <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
         <Polygon>
           <outerBoundaryIs>
@@ -671,7 +632,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Campus Entrance </name>
+        <name>Campus Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -707,7 +668,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Lecture Room 11-13 Entrance </name>
+        <name>Lecture Room 11-13 Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -734,7 +695,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Faculty of Social science Entrance </name>
+        <name>Faculty of Social science Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -752,7 +713,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Senate Building Entrance </name>
+        <name>Senate Building Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -774,12 +735,12 @@
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
-            3.8811611,7.3284922,0
+            3.8811557,7.328431,0
           </coordinates>
         </Point>
       </Placemark>
       <Placemark>
-        <name>Law Theatre Entrance </name>
+        <name>Law Theatre Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -788,11 +749,11 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Conference Center Entrance </name>
+        <name>Conference Center Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
-            3.8813918,7.3288048,0
+            3.881367,7.3288188,0
           </coordinates>
         </Point>
       </Placemark>
@@ -815,7 +776,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Faculty of Dentistry Entrance </name>
+        <name>Faculty of Dentistry Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -833,7 +794,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>New Tasty Vine Entrance </name>
+        <name>New Tasty Vine Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -846,12 +807,12 @@
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
-            3.8821595,7.3234173,0
+            3.8820254,7.3234386,0
           </coordinates>
         </Point>
       </Placemark>
       <Placemark>
-        <name>Department of Computer Science Entrance </name>
+        <name>Department of Computer Science Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -887,7 +848,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Faculty of Natural and Applied Science Entrance </name>
+        <name>Faculty of Natural and Applied Science Entrance</name>
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
@@ -938,7 +899,7 @@
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
-            3.8796152,7.328072,0
+            3.8790761,7.3267658,0
           </coordinates>
         </Point>
       </Placemark>
@@ -965,7 +926,982 @@
         <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
         <Point>
           <coordinates>
-            3.8779997,7.326113,0
+            3.8779984,7.3261137,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Block L</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8812358,7.3234797,0
+                3.8812398,7.3234531,0
+                3.8813015,7.3232642,0
+                3.8814544,7.3233055,0
+                3.8814168,7.3233919,0
+                3.881512,7.3234239,0
+                3.881496,7.3234771,0
+                3.8817588,7.3235595,0
+                3.8817347,7.3236526,0
+                3.8814852,7.3235742,0
+                3.8812358,7.3234797,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Block C</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8813264,7.3232048,0
+                3.8813868,7.32298,0
+                3.881482,7.3230079,0
+                3.8814458,7.3231369,0
+                3.8817556,7.3232367,0
+                3.8817891,7.3231063,0
+                3.8818763,7.3231436,0
+                3.8818132,7.3233657,0
+                3.8813264,7.3232048,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Block U</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8818906,7.323095,0
+                3.8814145,7.3229446,0
+                3.8814963,7.3226627,0
+                3.8819751,7.3228249,0
+                3.8819402,7.3229313,0
+                3.8816237,7.3228143,0
+                3.8815996,7.3228835,0
+                3.8819268,7.3229872,0
+                3.8818906,7.323095,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Block I</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8815352,7.3225908,0
+                3.8815607,7.3224857,0
+                3.8820381,7.3226467,0
+                3.8820113,7.3227518,0
+                3.8815352,7.3225908,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Block L Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.88101,7.3238075,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Block C Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8819,7.3231235,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Block U Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8819702,7.3229775,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Block I Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8819339,7.322754,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Exodus</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8830519,7.3242002,0
+                3.8831779,7.3240379,0
+                3.8840175,7.3248121,0
+                3.8838807,7.3249478,0
+                3.8830519,7.3242002,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Exodus Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8830787,7.3241603,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Citrus</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8835232,7.3238855,0
+                3.883664,7.3237245,0
+                3.8839255,7.3239799,0
+                3.8838008,7.3241356,0
+                3.8835232,7.3238855,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Citrus Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8835393,7.3237325,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Gym</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8824592,7.3239753,0
+                3.8825142,7.3238569,0
+                3.8827636,7.3240152,0
+                3.8827006,7.3241282,0
+                3.8824592,7.3239753,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Gym Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8825718,7.3240617,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Achievers</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8782607,7.3273732,0
+                3.8786389,7.3267986,0
+                3.878824,7.3269449,0
+                3.8784512,7.3274929,0
+                3.8782607,7.3273732,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Achievers Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8783332,7.327485,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Basketball Court</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8760978,7.3271452,0
+                3.8761274,7.3268392,0
+                3.8765163,7.3268951,0
+                3.8764948,7.3272303,0
+                3.8760978,7.3271452,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Unassigned point (was Basketball Court duplicate)</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8738608,7.3275194,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Tasty Delight</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8780401,7.3261091,0
+                3.8780387,7.3259535,0
+                3.8781634,7.3259521,0
+                3.8781715,7.3261011,0
+                3.8780401,7.3261091,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Tasty Delight Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8781017,7.326137,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Enterprise Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8824495,7.3241545,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Basketball Court Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.876541,7.3271941,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Sport Complex</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.88058,7.3279064,0
+                3.8809126,7.3274009,0
+                3.8812345,7.3276031,0
+                3.8808965,7.3280926,0
+                3.88058,7.3279064,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Sport Complex Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8811111,7.3278585,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Olive Hostel</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.883256,7.3239898,0
+                3.8833741,7.3238727,0
+                3.8842109,7.3246176,0
+                3.8840714,7.3247879,0
+                3.883256,7.3239898,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Olive Hostel Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8832641,7.3239525,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Cresta Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.880257,7.3231271,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Jackson hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8810736,7.3234323,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Almond hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8811319,7.3232004,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Peace hall 1 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.881042,7.3229596,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 1 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8812656,7.3227892,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 3 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8813299,7.3225527,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 5 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8813741,7.3224024,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Peace hall 2 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8806999,7.3228267,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Hibiscus hall 1 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8803291,7.3225727,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Hibiscus hall 2 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8803311,7.3225661,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>PG Hostel Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.880468,7.322025,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Rebelation hall 1 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8824294,7.3235839,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Genesis hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8838802,7.3237153,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Cedars hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8841622,7.3241008,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mango hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.884459,7.3243104,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Apple hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8832272,7.3235714,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Lemon 1 hall Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8839714,7.3250392,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Lemon 2 Hall</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8842083,7.3252841,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>The chronicles Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8840275,7.3253924,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Jackson hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8803603,7.3232214,0
+                3.8803845,7.3230564,0
+                3.8810926,7.3232772,0
+                3.8810523,7.3234422,0
+                3.8803603,7.3232214,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Almond Hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8807378,7.3230911,0
+                3.8807465,7.3229966,0
+                3.8807619,7.3229235,0
+                3.8811482,7.3230512,0
+                3.8810945,7.3232028,0
+                3.8807378,7.3230911,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 2 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8812653,7.3227923,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 4 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8813345,7.3225546,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 6 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8813728,7.3224026,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Rebelation hall 2 Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8826443,7.3236967,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Peace hall 2</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8805689,7.3227817,0
+                3.8806024,7.3226553,0
+                3.8808801,7.3227524,0
+                3.8808465,7.3228814,0
+                3.8805689,7.3227817,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Peace hall 1</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8809109,7.3229054,0
+                3.8809552,7.3227644,0
+                3.8812274,7.3228642,0
+                3.8811831,7.3229985,0
+                3.8809109,7.3229054,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 1</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8808526,7.3226578,0
+                3.8808956,7.3225221,0
+                3.8812992,7.3226511,0
+                3.8812483,7.3227868,0
+                3.8808526,7.3226578,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 2</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8804356,7.3225155,0
+                3.880461,7.3223798,0
+                3.880862,7.3225128,0
+                3.8808191,7.3226378,0
+                3.8804356,7.3225155,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 3</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8809237,7.3224609,0
+                3.8809599,7.3223252,0
+                3.8813515,7.3224569,0
+                3.8813153,7.322586,0
+                3.8809237,7.3224609,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 4</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8804892,7.3223146,0
+                3.8805227,7.3221842,0
+                3.8809237,7.3223186,0
+                3.8808835,7.3224503,0
+                3.8804892,7.3223146,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 5</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8809827,7.3222614,0
+                3.8810203,7.3221284,0
+                3.8814226,7.3222468,0
+                3.8813824,7.3223931,0
+                3.8809827,7.3222614,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Camp David 6</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8805536,7.322127,0
+                3.8805831,7.3219821,0
+                3.8809975,7.3221164,0
+                3.8809532,7.3222521,0
+                3.8805536,7.322127,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Hibiscus hall 1</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8801978,7.322515,0
+                3.8802219,7.3222383,0
+                3.8803775,7.3222716,0
+                3.8803319,7.3225323,0
+                3.8801978,7.322515,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Hibiscus hall 2</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8801442,7.3225044,0
+                3.880002,7.3224871,0
+                3.8800449,7.3222184,0
+                3.8801924,7.322241,0
+                3.8801442,7.3225044,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>PG Hostel</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8801133,7.3220574,0
+                3.8803681,7.3216238,0
+                3.8805291,7.3217276,0
+                3.8802581,7.3221452,0
+                3.8801133,7.3220574,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Rebelation hall 1</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8823134,7.3237222,0
+                3.8823939,7.3234482,0
+                3.8825387,7.3235068,0
+                3.8824529,7.3237781,0
+                3.8823134,7.3237222,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Rebelation hall 2</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8825387,7.32381,0
+                3.8826138,7.3235413,0
+                3.882756,7.3235972,0
+                3.8826675,7.3238606,0
+                3.8825387,7.32381,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Apple hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8825157,7.3233205,0
+                3.8825707,7.3230943,0
+                3.8832775,7.3233391,0
+                3.8832829,7.3234096,0
+                3.8832587,7.3234907,0
+                3.8832265,7.3235572,0
+                3.883079,7.3234974,0
+                3.8830549,7.3235679,0
+                3.8826311,7.3234269,0
+                3.8826525,7.3233657,0
+                3.8825157,7.3233205,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Genesis hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8836847,7.3235177,0
+                3.8838349,7.3233262,0
+                3.8842802,7.3237305,0
+                3.8841085,7.3239141,0
+                3.8836847,7.3235177,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Mango hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8841286,7.3240232,0
+                3.8843043,7.3238409,0
+                3.8846825,7.3242067,0
+                3.8845296,7.3243903,0
+                3.8841286,7.3240232,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Cedars hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8839301,7.3242493,0
+                3.8840857,7.3240684,0
+                3.8844733,7.3244262,0
+                3.8843056,7.3246191,0
+                3.8839301,7.3242493,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Lemon 1 hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8839672,7.3250132,0
+                3.8842824,7.3246807,0
+                3.8843977,7.3247858,0
+                3.8840705,7.3251263,0
+                3.8839672,7.3250132,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Lemon 2 hall</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8841148,7.3251595,0
+                3.8844286,7.324827,0
+                3.8845318,7.3249268,0
+                3.8842167,7.3252726,0
+                3.8841148,7.3251595,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Enterprise field</name>
+        <styleUrl>#poly-000000-1200-77-nodesc</styleUrl>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <tessellate>1</tessellate>
+              <coordinates>
+                3.8816517,7.3238617,0
+                3.8823383,7.3241757,0
+                3.8820165,7.3248833,0
+                3.8813915,7.3246811,0
+                3.8816517,7.3238617,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark>
+        <name>Enterprise field Entrance</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            3.8818502,7.3238538,0
           </coordinates>
         </Point>
       </Placemark>
