@@ -13,6 +13,9 @@ import '../theme/app_tokens.dart';
 import '../theme/map_styles.dart';
 import '../utils/map_markers.dart';
 import '../widgets/category_icon.dart';
+import '../widgets/favorite_button.dart';
+import '../widgets/location_permission_sheet.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/premium/glass_panel.dart';
 import '../widgets/premium/gradient_button.dart';
 import '../widgets/premium/motion.dart';
@@ -151,14 +154,13 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _locateMe() async {
+    if (!await explainLocationIfNeeded(context) || !mounted) return;
     setState(() => _locating = true);
     final pos = await _locationService.getCurrentLocation();
     if (!mounted) return;
     setState(() => _locating = false);
     if (pos == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not get your location.')),
-      );
+      showLocationUnavailable(context, 'Could not get your location.');
       return;
     }
     final here = _locationService.positionToLatLng(pos);
@@ -355,6 +357,10 @@ class _MapScreenState extends State<MapScreen> {
                       ],
                     ).fadeSlideIn(index: 1, rise: 0.3),
                   ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: OfflineBanner(),
+                  ),
                 ],
               ),
             ),
@@ -498,6 +504,8 @@ class _SelectedCard extends StatelessWidget {
                   ],
                 ),
               ),
+              FavoriteButton(building: building),
+              const SizedBox(width: AppSpace.xs),
               IconButton(
                 onPressed: onClose,
                 tooltip: 'Close',

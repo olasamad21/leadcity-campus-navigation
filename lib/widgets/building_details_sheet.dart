@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/building.dart';
 import '../screens/find_route_screen.dart';
 import '../screens/map_screen.dart';
+import 'favorite_button.dart';
 import '../theme/app_tokens.dart';
 import 'category_icon.dart';
 import 'premium/gradient_button.dart';
@@ -115,6 +116,8 @@ class BuildingDetailsSheet extends StatelessWidget {
                   ],
                 ),
               ),
+              FavoriteButton(building: building),
+              const SizedBox(width: AppSpace.xs),
               IconButton(
                 onPressed: onClose ?? () => Navigator.pop(context),
                 icon: const Icon(Icons.close_rounded),

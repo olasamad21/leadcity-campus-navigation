@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../data/campus_graph.dart';
+import '../data/campus_graph.dart' show CampusRoute;
 import 'map_markers.dart';
 
 /// Distance-along-route maths for a walking polyline.
@@ -159,44 +159,154 @@ class RouteProjection {
   final double offsetMeters;
 }
 
-/// One spoken manoeuvre on a route, positioned along the polyline.
-class TurnStep {
-  const TurnStep(this.instruction, this.position, this.alongMeters);
+/// How sharp a detected turn is.
+enum TurnSeverity { slight, normal, sharp }
 
+/// One manoeuvre on a route, positioned at the real corner on the polyline.
+class TurnStep {
+  const TurnStep(
+    this.instruction,
+    this.position,
+    this.alongMeters, {
+    this.angleDegrees = 0,
+  });
+
+  /// "Turn left", "Slight right", "Sharp left", ...
   final String instruction;
   final LatLng position;
   final double alongMeters;
 
+  /// Signed change of walking direction at the corner (+ right, - left).
+  final double angleDegrees;
+
   bool get isLeft => instruction.toLowerCase().contains('left');
   bool get isRight => instruction.toLowerCase().contains('right');
+  bool get isSlight => instruction.toLowerCase().startsWith('slight');
+  bool get isSharp => instruction.toLowerCase().startsWith('sharp');
 
-  IconData get icon => isLeft
-      ? Icons.turn_left_rounded
-      : isRight
-          ? Icons.turn_right_rounded
-          : Icons.straight_rounded;
+  IconData get icon {
+    if (isLeft) {
+      return isSlight
+          ? Icons.turn_slight_left_rounded
+          : isSharp
+              ? Icons.turn_sharp_left_rounded
+              : Icons.turn_left_rounded;
+    }
+    if (isRight) {
+      return isSlight
+          ? Icons.turn_slight_right_rounded
+          : isSharp
+              ? Icons.turn_sharp_right_rounded
+              : Icons.turn_right_rounded;
+    }
+    return Icons.straight_rounded;
+  }
+
+  /// Phrase used inside spoken prompts ("turn left", "keep slightly left").
+  String get spokenAction {
+    final side = isLeft ? 'left' : 'right';
+    if (isSlight) return 'keep slightly $side';
+    if (isSharp) return 'take a sharp $side';
+    return 'turn $side';
+  }
+
+  @override
+  String toString() =>
+      'TurnStep($instruction @ ${alongMeters.toStringAsFixed(1)} m, '
+      '${angleDegrees.toStringAsFixed(0)}°)';
 }
 
-/// Turn steps for [route], aligned one-to-one with [CampusRoute.instructions]
-/// (same filter as the voice controller: the manoeuvre is at the far node of
-/// each turn edge).
-List<TurnStep> turnStepsFor(
-  CampusRoute route,
-  RouteGeometry geometry, {
-  CampusGraph? graph,
+/// Turns for [route], worked out from the shape of the path being walked.
+///
+/// Stored per-edge labels in the campus graph only hold for the direction the
+/// campus was surveyed in (and describe the corner at the start of the edge),
+/// so they are not used for guidance.
+List<TurnStep> turnStepsFor(CampusRoute route, RouteGeometry geometry) =>
+    detectTurns(geometry);
+
+/// Finds corners along [g] by comparing the walking direction [lookMeters]
+/// before and after each vertex (smooths GPS wobble in the survey trace).
+///
+/// * changes under [minAngle] are ignored (path wobble / gentle curves);
+/// * nearby same-side detections within [mergeMeters] are one corner, kept
+///   at its sharpest vertex;
+/// * a quick left-right "zigzag" of small angles is treated as noise.
+List<TurnStep> detectTurns(
+  RouteGeometry g, {
+  double lookMeters = 12,
+  double minAngle = 35,
+  double mergeMeters = 15,
 }) {
-  final g = graph ?? campusGraph;
-  final steps = <TurnStep>[];
-  final ids = route.nodeIds;
-  var minAlong = 0.0;
-  for (var k = 0; k < ids.length - 1; k++) {
-    final text = g.getEdgeInstruction(ids[k], ids[k + 1]);
-    if (!CampusGraph.isTurnInstruction(text)) continue;
-    final node = g.nodes[ids[k + 1]];
-    if (node == null) continue;
-    final proj = geometry.project(node.position, minAlong: minAlong);
-    minAlong = proj.alongMeters;
-    steps.add(TurnStep(text!, node.position, proj.alongMeters));
+  final pts = g.points;
+  if (pts.length < 3 || g.length < 2 * 3) return const [];
+
+  final cum = g._cum;
+  final candidates = <TurnStep>[];
+  for (var i = 1; i < pts.length - 1; i++) {
+    final d = cum[i];
+    if (d < 3 || d > g.length - 3) continue;
+    final a = g.pointAt(d - lookMeters);
+    final b = pts[i];
+    final c = g.pointAt(d + lookMeters);
+    if (RouteGeometry.distance(a, b) < 2 || RouteGeometry.distance(b, c) < 2) continue;
+    final delta = _signedTurn(MapMarkers.bearing(a, b), MapMarkers.bearing(b, c));
+    if (delta.abs() < minAngle) continue;
+
+    // Far check for gentle bends: a real bend still changes direction when
+    // comparing the stretches further out (12-24 m before vs after); a short
+    // sideways jog or wobble does not. Strong corners (60°+) always count.
+    if (delta.abs() < 60 &&
+        d - 2 * lookMeters >= 0 &&
+        d + 2 * lookMeters <= g.length) {
+      final far = _signedTurn(
+        MapMarkers.bearing(g.pointAt(d - 2 * lookMeters), a),
+        MapMarkers.bearing(c, g.pointAt(d + 2 * lookMeters)),
+      );
+      if (far.sign != delta.sign || far.abs() < minAngle * 0.6) continue;
+    }
+    candidates.add(TurnStep(_label(delta), b, d, angleDegrees: delta));
   }
-  return steps;
+
+  // One corner per cluster of same-side detections, kept at its sharpest vertex.
+  final merged = <TurnStep>[];
+  for (final c in candidates) {
+    final last = merged.isEmpty ? null : merged.last;
+    if (last != null &&
+        c.alongMeters - last.alongMeters <= mergeMeters &&
+        c.angleDegrees.sign == last.angleDegrees.sign) {
+      if (c.angleDegrees.abs() > last.angleDegrees.abs()) {
+        merged[merged.length - 1] = c;
+      }
+    } else {
+      merged.add(c);
+    }
+  }
+
+  // Drop small opposite-side pairs that are really just a wobble.
+  final out = <TurnStep>[];
+  for (var i = 0; i < merged.length; i++) {
+    final cur = merged[i];
+    final next = i + 1 < merged.length ? merged[i + 1] : null;
+    if (next != null &&
+        next.alongMeters - cur.alongMeters <= mergeMeters &&
+        cur.angleDegrees.sign != next.angleDegrees.sign &&
+        cur.angleDegrees.abs() < 60 &&
+        next.angleDegrees.abs() < 60) {
+      i++; // skip both
+      continue;
+    }
+    out.add(cur);
+  }
+  return out;
+}
+
+double _signedTurn(double inBearing, double outBearing) =>
+    (outBearing - inBearing + 540) % 360 - 180;
+
+String _label(double delta) {
+  final side = delta > 0 ? 'right' : 'left';
+  final a = delta.abs();
+  if (a < 45) return 'Slight $side';
+  if (a >= 120) return 'Sharp $side';
+  return 'Turn $side';
 }

@@ -12,6 +12,7 @@ import '../utils/map_markers.dart';
 import '../utils/route_geometry.dart';
 import '../widgets/premium/glass_panel.dart';
 import '../widgets/premium/gradient_button.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/premium/motion.dart';
 import 'navigation_screen.dart';
 
@@ -186,11 +187,18 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen>
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: GlassIconButton(
-                  icon: Icons.arrow_back_rounded,
-                  tooltip: 'Back',
-                  onPressed: () => Navigator.pop(context),
-                ).fadeSlideIn(),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GlassIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      tooltip: 'Back',
+                      onPressed: () => Navigator.pop(context),
+                    ).fadeSlideIn(),
+                    const SizedBox(width: AppSpace.sm),
+                    const Expanded(child: OfflineBanner()),
+                  ],
+                ),
               ),
             ),
             Align(

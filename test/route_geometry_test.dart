@@ -48,33 +48,17 @@ void main() {
     expect(g.bearingAt(200), closeTo(90, 1)); // east
   });
 
-  test('turnStepsFor places each turn at its manoeuvre node', () {
-    final graph = CampusGraph(
-      nodes: {
-        'a': CampusNode(id: 'a', position: _a, connectedNodeIds: ['b']),
-        'b': CampusNode(id: 'b', position: _b, connectedNodeIds: ['a', 'c']),
-        'c': CampusNode(id: 'c', position: _c, connectedNodeIds: ['b']),
-      },
-      edges: const [
-        CampusEdge(fromId: 'a', toId: 'b', distanceMeters: 111),
-        CampusEdge(
-          fromId: 'b',
-          toId: 'c',
-          distanceMeters: 110,
-          voiceInstruction: 'Turn right',
-        ),
-      ],
-    );
+  test('turnStepsFor finds the corner from the shape', () {
     final route = CampusRoute(
       polylinePoints: const [_a, _b, _c],
-      instructions: const ['Turn right'],
+      instructions: const [],
       totalDistanceMeters: 221,
       estimatedWalkingMinutes: 3,
       nodeIds: const ['a', 'b', 'c'],
     );
-    final steps = turnStepsFor(route, g, graph: graph);
+    final steps = turnStepsFor(route, g);
     expect(steps, hasLength(1));
-    expect(steps.single.isRight, isTrue);
-    expect(steps.single.alongMeters, closeTo(g.length, 1)); // at node c
+    expect(steps.single.isRight, isTrue); // north, then east
+    expect(steps.single.alongMeters, closeTo(111, 2)); // at b, the corner
   });
 }

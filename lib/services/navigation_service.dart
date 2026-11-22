@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/campus_graph.dart';
 import '../models/building.dart';
+import '../utils/route_geometry.dart';
 import 'campus_routing_service.dart';
 
 /// Navigation instruction model
@@ -139,26 +140,19 @@ class NavigationService {
     );
   }
 
-  /// One [NavigationInstruction] per graph edge that has a voice line, with
-  /// location at the maneuver node for live navigation.
+  /// One [NavigationInstruction] per corner detected on the route's shape;
+  /// [NavigationInstruction.distance] is the walk from the previous corner.
   List<NavigationInstruction> _turnInstructionsFromPath(CampusRoute route) {
-    final graph = _campusRouting.graph;
+    final steps = detectTurns(RouteGeometry(route.polylinePoints));
     final out = <NavigationInstruction>[];
-    final ids = route.nodeIds;
-    for (var i = 0; i < ids.length - 1; i++) {
-      final fromId = ids[i];
-      final toId = ids[i + 1];
-      final text = graph.getEdgeInstruction(fromId, toId);
-      if (text == null) continue;
-      final toNode = graph.nodes[toId];
-      if (toNode == null) continue;
-      out.add(
-        NavigationInstruction(
-          instruction: text,
-          distance: graph.getEdgeDistance(fromId, toId),
-          location: toNode.position,
-        ),
-      );
+    var previous = 0.0;
+    for (final s in steps) {
+      out.add(NavigationInstruction(
+        instruction: s.instruction,
+        distance: s.alongMeters - previous,
+        location: s.position,
+      ));
+      previous = s.alongMeters;
     }
     return out;
   }

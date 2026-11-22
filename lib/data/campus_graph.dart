@@ -77,6 +77,10 @@ class CampusGraph {
   List<LatLng> getRouteCoordinates(List<String> nodeIds) =>
       nodeIds.map((id) => nodes[id]?.position).whereType<LatLng>().toList();
 
+  /// NOTE: per-edge [CampusEdge.voiceInstruction] labels describe the corner
+  /// at the START of the edge, walked in the survey direction only. Guidance
+  /// uses shape-based turns instead (see `detectTurns` in route_geometry.dart).
+  ///
   /// True for instructions that are spoken during navigation (left/right turns).
   /// Shared by [getRouteInstructions] and the voice controller so the
   /// instruction list and its maneuver anchors always stay aligned.

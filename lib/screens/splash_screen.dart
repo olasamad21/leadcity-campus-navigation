@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../data/buildings_data.dart';
+import '../services/places_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 import '../theme/page_transitions.dart';
@@ -29,6 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.wait([
       Future<void>.delayed(_minimumShow),
       BuildingsData.loadFromKml().catchError((_) => BuildingsData.getAllBuildings()),
+      PlacesStore.instance.load(),
     ]);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(

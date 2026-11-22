@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:leadcity_navigation/data/campus_graph.dart';
 import 'package:leadcity_navigation/services/campus_routing_service.dart';
-import 'package:leadcity_navigation/services/voice_navigation_controller.dart';
-import 'package:leadcity_navigation/services/voice_service.dart';
 
 /// Approximately offset [anchor] north by [northMeters] (spherical approximation).
 LatLng offsetNorth(LatLng anchor, double northMeters) {
@@ -114,47 +112,6 @@ CampusGraph _wideChainGraph() {
   return CampusGraph(nodes: nodes, edges: edges);
 }
 
-/// Two-step voice corridor for [VoiceNavigationController] proximity tests.
-CampusGraph _voiceGraph() {
-  const v0 = LatLng(52.0000, 6.5000);
-  const v1 = LatLng(52.00030, 6.5000);
-  const v2 = LatLng(52.00060, 6.5000);
-
-  return CampusGraph(
-    nodes: {
-      'v0': CampusNode(
-        id: 'v0',
-        position: v0,
-        connectedNodeIds: ['v1'],
-      ),
-      'v1': CampusNode(
-        id: 'v1',
-        position: v1,
-        connectedNodeIds: ['v0', 'v2'],
-      ),
-      'v2': CampusNode(
-        id: 'v2',
-        position: v2,
-        connectedNodeIds: ['v1'],
-      ),
-    },
-    edges: const [
-      CampusEdge(
-        fromId: 'v0',
-        toId: 'v1',
-        distanceMeters: 40,
-        voiceInstruction: 'Turn left',
-      ),
-      CampusEdge(
-        fromId: 'v1',
-        toId: 'v2',
-        distanceMeters: 40,
-        voiceInstruction: 'Turn right',
-      ),
-    ],
-  );
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -226,148 +183,6 @@ void main() {
       final dest = routing.nodes['iso']!.position;
 
       expect(svc.calculateRoute(origin, dest), isNull);
-    });
-  });
-
-  group('VoiceNavigationController', () {
-    late CampusGraph voiceGraph;
-    late CampusRoute voiceRoute;
-
-    setUp(() {
-      voiceGraph = _voiceGraph();
-      voiceRoute = CampusRoute(
-        polylinePoints: voiceGraph.getRouteCoordinates(['v0', 'v1', 'v2']),
-        instructions: voiceGraph.getRouteInstructions(['v0', 'v1', 'v2']),
-        totalDistanceMeters: 80,
-        estimatedWalkingMinutes: 1,
-        nodeIds: ['v0', 'v1', 'v2'],
-      );
-      expect(voiceRoute.instructions, ['Turn left', 'Turn right']);
-    });
-
-    /// Use real singleton; initialization is optional for [speak] no-ops in tests.
-
-    VoiceNavigationController controller() =>
-        VoiceNavigationController(
-          voiceRoute,
-          VoiceService(),
-          campusGraphOverride: voiceGraph,
-        );
-
-    test('turn instruction fires its "now" cue within 15 m of manoeuvre node', () {
-      final vc = controller();
-      final v1Anchor = voiceGraph.nodes['v1']!.position;
-
-      vc.onLocationUpdate(offsetNorth(v1Anchor, 10));
-      expect(vc.nextInstructionIndex, 1);
-      expect(vc.nextInstructionText, 'Turn right');
-    });
-
-    test('turn instruction does not fire when 25 m from manoeuvre node',
-        () {
-      final vc = controller();
-      final v1Anchor = voiceGraph.nodes['v1']!.position;
-
-      final d = VoiceNavigationController.haversineDistanceMetersAnchor(
-        offsetNorth(v1Anchor, 25),
-        v1Anchor,
-      );
-      expect(d > 15.0, isTrue);
-
-      vc.onLocationUpdate(offsetNorth(v1Anchor, 25));
-      expect(vc.nextInstructionIndex, 0);
-      expect(vc.nextInstructionText, 'Turn left');
-    });
-
-    test('spoken instruction sequence is never repeated once advanced', () {
-      final vc = controller();
-      final v1 = voiceGraph.nodes['v1']!.position;
-
-      final posTenMFromV1 = offsetNorth(v1, 10);
-      vc.onLocationUpdate(posTenMFromV1);
-
-      expect(vc.nextInstructionIndex, 1);
-
-      for (var i = 0; i < 15; i++) {
-        vc.onLocationUpdate(posTenMFromV1);
-      }
-
-      expect(vc.nextInstructionIndex, 1);
-      expect(vc.nextInstructionText, 'Turn right');
-    });
-
-    test('checkArrival true within 15 m and false when far away', () {
-      final vc = controller();
-      const dest = LatLng(53.0000, 10.0000);
-
-      vc.reset();
-      final nearDest = offsetNorth(dest, 14);
-
-      expect(
-        VoiceNavigationController.haversineDistanceMetersAnchor(nearDest, dest)
-            <=
-            15.0,
-        isTrue,
-      );
-
-      expect(vc.checkArrival(nearDest, dest), isTrue);
-
-      vc.reset();
-
-      expect(
-        vc.checkArrival(LatLng(55.0000, 12.0000), dest),
-        isFalse,
-      );
-    });
-
-    test('non-turn instructions are skipped without shifting turn anchors', () {
-      const a = LatLng(52.0000, 6.5000);
-      const b = LatLng(52.00030, 6.5000);
-      const c = LatLng(52.00060, 6.5000);
-      final graph = CampusGraph(
-        nodes: {
-          'a': CampusNode(id: 'a', position: a, connectedNodeIds: ['b']),
-          'b': CampusNode(id: 'b', position: b, connectedNodeIds: ['a', 'c']),
-          'c': CampusNode(id: 'c', position: c, connectedNodeIds: ['b']),
-        },
-        edges: const [
-          CampusEdge(
-            fromId: 'a',
-            toId: 'b',
-            distanceMeters: 33,
-            voiceInstruction: 'Continue straight',
-          ),
-          CampusEdge(
-            fromId: 'b',
-            toId: 'c',
-            distanceMeters: 33,
-            voiceInstruction: 'Turn left',
-          ),
-        ],
-      );
-      final ids = ['a', 'b', 'c'];
-      final route = CampusRoute(
-        polylinePoints: graph.getRouteCoordinates(ids),
-        instructions: graph.getRouteInstructions(ids),
-        totalDistanceMeters: 66,
-        estimatedWalkingMinutes: 1,
-        nodeIds: ids,
-      );
-      expect(route.instructions, ['Turn left']);
-
-      final vc = VoiceNavigationController(
-        route,
-        VoiceService(),
-        campusGraphOverride: graph,
-      );
-
-      // Standing at 'b' must not fire: the turn's anchor is 'c', not 'b'.
-      vc.onLocationUpdate(b);
-      expect(vc.nextInstructionIndex, 0);
-
-      vc.onLocationUpdate(offsetNorth(c, -5));
-      expect(vc.nextInstructionIndex, 1);
-      expect(vc.nextInstructionText, isNull);
     });
   });
 }

@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/buildings_data.dart';
 import '../models/building.dart';
 import '../models/building_category.dart';
+import '../services/places_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 import '../utils/building_search.dart';
@@ -70,6 +71,24 @@ class _BuildingSearchScreenState extends State<BuildingSearchScreen> {
         ? _all
         : _all.where((b) => b.category == _category).toList();
     return searchBuildings(pool, _controller.text);
+  }
+
+  List<Widget> _recentSection(BuildContext context) {
+    final recents = PlacesStore.resolve(PlacesStore.instance.recentIds.value)
+        .where((b) => b.id != widget.excludeId)
+        .toList();
+    if (recents.isEmpty) return const [];
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+        child: Text('Recent', style: Theme.of(context).textTheme.labelMedium),
+      ),
+      for (var i = 0; i < recents.length; i++)
+        BuildingCard(
+          building: recents[i],
+          onTap: () => Navigator.pop(context, recents[i]),
+        ).fadeSlideIn(index: i, rise: 0.08),
+    ];
   }
 
   @override
@@ -167,6 +186,8 @@ class _BuildingSearchScreenState extends State<BuildingSearchScreen> {
                           BuildingSearchScreen.currentLocation,
                         ),
                       ).fadeSlideIn(),
+                    if (query.isEmpty && _category == null)
+                      ..._recentSection(context),
                     if (results.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 64),

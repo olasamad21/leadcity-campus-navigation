@@ -7,9 +7,11 @@ import '../models/building.dart';
 import '../models/building_category.dart';
 import '../services/location_service.dart';
 import '../services/navigation_service.dart';
+import '../services/places_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/category_icon.dart';
+import '../widgets/location_permission_sheet.dart';
 import '../widgets/premium/gradient_button.dart';
 import '../widgets/premium/motion.dart';
 import '../widgets/premium/pressable_scale.dart';
@@ -105,18 +107,16 @@ class _FindRouteScreenState extends State<FindRouteScreen> {
   }
 
   Future<void> _useCurrentLocation() async {
+    if (!await explainLocationIfNeeded(context) || !mounted) return;
     setState(() => _isAcquiringGps = true);
     final position = await _locationService.getCurrentLocation();
     if (!mounted) return;
     setState(() => _isAcquiringGps = false);
 
     if (position == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not get your location. Please choose a starting building.',
-          ),
-        ),
+      showLocationUnavailable(
+        context,
+        'Could not get your location. Turn it on, or choose a starting building.',
       );
       return;
     }
@@ -200,6 +200,7 @@ class _FindRouteScreenState extends State<FindRouteScreen> {
     if (_routeInfo == null || startNav == null || _destinationBuilding == null) {
       return;
     }
+    PlacesStore.instance.addRecent(_destinationBuilding!);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => RoutePreviewScreen(

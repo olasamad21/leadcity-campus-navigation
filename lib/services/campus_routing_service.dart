@@ -1,6 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../data/campus_graph.dart';
+import '../utils/route_geometry.dart';
 
 /// On-graph routing over [CampusGraph] edges (pre-measured walkway segments).
 ///
@@ -82,7 +83,11 @@ class CampusRoutingService {
     if (path == null) return null;
 
     final polylinePoints = _graph.getRouteCoordinates(path);
-    final instructions = _graph.getRouteInstructions(path);
+    // Turns come from the shape of this path, so they are correct in either
+    // walking direction and sit on the real corner.
+    final instructions = detectTurns(RouteGeometry(polylinePoints))
+        .map((s) => s.instruction)
+        .toList();
     final totalDistanceMeters = _pathTotalDistance(path);
 
     final walkingMetersPerMinute = 80.0;

@@ -4,117 +4,108 @@ import 'dart:math' as math;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../data/campus_graph.dart';
+import '../utils/route_geometry.dart';
 import 'voice_service.dart';
 
-/// Proximity-triggered voice guidance along a solved [CampusRoute].
+/// Spoken turn-by-turn guidance along a solved [CampusRoute].
 ///
-/// Uses [VoiceService] for TTS only; does not implement speech itself.
+/// Turns come from the route's shape ([detectTurns]) and prompts are driven
+/// by distance walked ALONG the route ([onProgress]), so a corner is
+/// announced exactly when you reach it, in the right direction, whichever
+/// way the path is walked.
+///
+/// Two cues per turn:
+///  * approach — "In 40 metres, turn left" (35–45 m before the corner), only
+///    when the previous corner is far enough back for it to make sense;
+///  * now — "Turn left now" (within 15 m of the corner).
 class VoiceNavigationController {
   VoiceNavigationController(
-    this._route,
+    CampusRoute route,
     this._voiceService, {
-    CampusGraph? campusGraphOverride,
-  }) : _campusGraph = campusGraphOverride ?? campusGraph {
-    final raw = _rawAnchorsFromGraph(_route, _campusGraph);
-    final n = math.min(raw.length, _route.instructions.length);
-    assert(() {
-      if (raw.length != _route.instructions.length) {
-        // ignore: avoid_print
-        print(
-          'VoiceNavigationController: anchor count (${raw.length}) '
-          '!= instructions (${_route.instructions.length}); '
-          'using first $n paired steps.',
+    List<TurnStep>? steps,
+  }) : steps = List.unmodifiable(
+          steps ?? detectTurns(RouteGeometry(route.polylinePoints)),
         );
-      }
-      return true;
-    }());
-    _instructionAnchors = raw.sublist(0, n);
-    _instructionTexts = _route.instructions.sublist(0, n);
-  }
 
-  final CampusRoute _route;
   final VoiceService _voiceService;
-  final CampusGraph _campusGraph;
 
-  /// Maneuver point per paired instruction (aligned with [_instructionTexts]).
-  late final List<LatLng> _instructionAnchors;
+  /// Corners on this route, in walking order.
+  final List<TurnStep> steps;
 
-  /// Subset of [_route.instructions] aligned with anchors (same length).
-  late final List<String> _instructionTexts;
+  static const double nowMeters = 15;
+  static const double approachMin = 35;
+  static const double approachMax = 45;
 
-  /// Tracks which instruction indices have had their approach cue spoken
-  /// ("In 40 metres, turn X" — fired between 35–45 m from the maneuver node).
+  /// Minimum gap after the previous corner before an approach cue is useful.
+  static const double approachGap = 50;
+
   final Set<int> _announcedApproach = {};
-
-  /// Tracks which instruction indices have had their "now" cue spoken
-  /// ("Turn X now" — fired within 15 m of the maneuver node).
   final Set<int> _announcedNow = {};
-
   bool _hasAnnouncedArrival = false;
 
-  /// LatLng at the destination node for each turn edge along [route].
-  /// Uses the same filter as [CampusGraph.getRouteInstructions] so anchors
-  /// line up one-to-one with [CampusRoute.instructions].
-  static List<LatLng> _rawAnchorsFromGraph(CampusRoute route, CampusGraph graph) {
-    final anchors = <LatLng>[];
-    final ids = route.nodeIds;
-    for (var k = 0; k < ids.length - 1; k++) {
-      final spoken = graph.getEdgeInstruction(ids[k], ids[k + 1]);
-      if (!CampusGraph.isTurnInstruction(spoken)) continue;
-      final node = graph.nodes[ids[k + 1]];
-      if (node != null) {
-        anchors.add(node.position);
-      }
-    }
-    return anchors;
-  }
+  /// Feed the distance walked along the route (metres from its start).
+  void onProgress(double alongMeters) {
+    for (var i = 0; i < steps.length; i++) {
+      if (_announcedNow.contains(i)) continue;
+      final ahead = steps[i].alongMeters - alongMeters;
 
-  /// GPS tick: fire two-stage distance-based announcements for every unspoken
-  /// instruction that contains 'left' or 'right'. Null instructions are skipped.
-  ///
-  /// Stage 1 (approach) — 35–45 m from maneuver node:
-  ///   speaks "In 40 metres, turn left/right".
-  /// Stage 2 (now)      — ≤15 m from maneuver node:
-  ///   speaks "Turn left/right now".
-  void onLocationUpdate(LatLng currentPosition) {
-    for (var i = 0; i < _instructionTexts.length; i++) {
-      final text = _instructionTexts[i];
-
-      // Only fire for turn instructions.
-      if (!CampusGraph.isTurnInstruction(text)) continue;
-      final lowerText = text.toLowerCase();
-
-      final anchor = _instructionAnchors[i];
-      final distanceM = haversineDistanceMetersAnchor(currentPosition, anchor);
-
-      // Stage 2 — within 15 m: speak "Turn X now".
-      if (distanceM <= 15.0 && !_announcedNow.contains(i)) {
+      // Walked past without a cue (e.g. GPS jump): mark done silently.
+      if (ahead < -nowMeters) {
+        _announcedApproach.add(i);
         _announcedNow.add(i);
-        _announcedApproach.add(i); // ensure approach is also marked
-        final direction = lowerText.contains('left') ? 'left' : 'right';
-        unawaited(_voiceService.speak('Turn $direction now'));
         continue;
       }
 
-      // Stage 1 — 35–45 m: speak "In 40 metres, turn X".
-      if (distanceM >= 35.0 && distanceM <= 45.0 && !_announcedApproach.contains(i)) {
+      if (ahead <= nowMeters) {
         _announcedApproach.add(i);
-        final direction = lowerText.contains('left') ? 'left' : 'right';
-        unawaited(_voiceService.speak('In 40 metres, turn $direction'));
+        _announcedNow.add(i);
+        unawaited(_voiceService.speak(nowPhrase(steps[i])));
+        return; // one prompt per update
       }
+
+      if (ahead >= approachMin &&
+          ahead <= approachMax &&
+          !_announcedApproach.contains(i) &&
+          _gapBefore(i) >= approachGap) {
+        _announcedApproach.add(i);
+        unawaited(_voiceService.speak(approachPhrase(steps[i], ahead)));
+        return;
+      }
+      // Later corners are further away; nothing more to say this update.
+      if (ahead > approachMax) return;
     }
   }
 
-  /// True when within 15 m of [destination]; speaks arrival once when it first becomes true.
+  double _gapBefore(int i) =>
+      i == 0 ? steps[0].alongMeters : steps[i].alongMeters - steps[i - 1].alongMeters;
+
+  static String nowPhrase(TurnStep s) {
+    final a = s.spokenAction;
+    return '${a[0].toUpperCase()}${a.substring(1)} now';
+  }
+
+  static String approachPhrase(TurnStep s, double metres) =>
+      'In ${(metres / 5).round() * 5} metres, ${s.spokenAction}';
+
+  /// Short lead-in for the start of a route when the first corner is close.
+  String? firstTurnHint() {
+    if (steps.isEmpty) return null;
+    final first = steps.first;
+    // Too close: the "now" cue fires straight away instead.
+    if (first.alongMeters > 60 || first.alongMeters <= nowMeters + 5) {
+      return null;
+    }
+    final m = math.max(5, (first.alongMeters / 5).round() * 5);
+    return 'In $m metres, ${first.spokenAction}.';
+  }
+
+  /// True when within 15 m of [destination]; speaks arrival once.
   bool checkArrival(LatLng currentPosition, LatLng destination) {
-    final distanceM =
-        haversineDistanceMetersAnchor(currentPosition, destination);
-    final arrived = distanceM <= 15.0;
+    final arrived =
+        haversineDistanceMetersAnchor(currentPosition, destination) <= 15.0;
     if (arrived && !_hasAnnouncedArrival) {
       _hasAnnouncedArrival = true;
-      unawaited(
-        _voiceService.speak('You have arrived at your destination.'),
-      );
+      unawaited(_voiceService.speak('You have arrived at your destination.'));
     }
     return arrived;
   }
@@ -125,33 +116,20 @@ class VoiceNavigationController {
     _hasAnnouncedArrival = false;
   }
 
-  /// Index of the next instruction whose Stage 2 ("now") cue has not yet fired.
-  /// Equals [_instructionTexts.length] when all have been spoken.
+  /// Index of the next corner whose "now" cue has not fired yet.
   int get nextInstructionIndex {
-    for (var i = 0; i < _instructionTexts.length; i++) {
+    for (var i = 0; i < steps.length; i++) {
       if (!_announcedNow.contains(i)) return i;
     }
-    return _instructionTexts.length;
+    return steps.length;
   }
 
-  /// Text of the next unspoken instruction (Stage 2 not yet fired), or null.
   String? get nextInstructionText {
-    final idx = nextInstructionIndex;
-    return idx < _instructionTexts.length ? _instructionTexts[idx] : null;
+    final i = nextInstructionIndex;
+    return i < steps.length ? steps[i].instruction : null;
   }
 
-  /// Haversine distance in metres (pure Dart via `dart:math`).
-  static double haversineDistanceMetersAnchor(LatLng a, LatLng b) {
-    const earthRadiusMeters = 6371000.0;
-    final phi1 = a.latitude * math.pi / 180.0;
-    final phi2 = b.latitude * math.pi / 180.0;
-    final dPhi = (b.latitude - a.latitude) * math.pi / 180.0;
-    final dLambda = (b.longitude - a.longitude) * math.pi / 180.0;
-    final sinDPhi = math.sin(dPhi / 2.0);
-    final sinDLambda = math.sin(dLambda / 2.0);
-    final h = sinDPhi * sinDPhi +
-        math.cos(phi1) * math.cos(phi2) * sinDLambda * sinDLambda;
-    final c = 2 * math.atan2(math.sqrt(h), math.sqrt((1 - h).clamp(0.0, 1.0)));
-    return earthRadiusMeters * c;
-  }
+  /// Haversine distance in metres.
+  static double haversineDistanceMetersAnchor(LatLng a, LatLng b) =>
+      RouteGeometry.distance(a, b);
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../data/buildings_data.dart';
 import '../models/building.dart';
 import '../models/building_category.dart';
+import '../services/places_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/building_details_sheet.dart';
@@ -133,28 +134,36 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            if (popular.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: _SectionTitle('Popular places').fadeSlideIn(index: 8),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 148,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: AppSpace.page,
-                    itemCount: popular.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(width: AppSpace.sm),
-                    itemBuilder: (context, i) => _PlaceCard(
-                      building: popular[i],
-                      onTap: () =>
-                          showBuildingDetailsSheet(context, popular[i]),
-                    ).fadeSlideIn(index: 9 + i, rise: 0.2),
-                  ),
+            SliverToBoxAdapter(
+              child: ValueListenableBuilder<List<String>>(
+                valueListenable: PlacesStore.instance.favoriteIds,
+                builder: (context, ids, _) => _PlacesRow(
+                  title: 'Saved places',
+                  icon: Icons.favorite_rounded,
+                  buildings: PlacesStore.resolve(ids),
+                  startIndex: 8,
                 ),
               ),
-            ],
+            ),
+            SliverToBoxAdapter(
+              child: ValueListenableBuilder<List<String>>(
+                valueListenable: PlacesStore.instance.recentIds,
+                builder: (context, ids, _) => _PlacesRow(
+                  title: 'Recent',
+                  icon: Icons.history_rounded,
+                  buildings: PlacesStore.resolve(ids),
+                  startIndex: 8,
+                  onClear: ids.isEmpty ? null : PlacesStore.instance.clearRecents,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: _PlacesRow(
+                title: 'Popular places',
+                buildings: popular,
+                startIndex: 9,
+              ),
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
@@ -312,6 +321,61 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Titled horizontal row of place cards; renders nothing when empty.
+class _PlacesRow extends StatelessWidget {
+  const _PlacesRow({
+    required this.title,
+    required this.buildings,
+    required this.startIndex,
+    this.icon,
+    this.onClear,
+  });
+
+  final String title;
+  final List<Building> buildings;
+  final int startIndex;
+  final IconData? icon;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    if (buildings.isEmpty) return const SizedBox.shrink();
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 28, 12, 12),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 20, color: AppColors.accent),
+                const SizedBox(width: AppSpace.xs),
+              ],
+              Expanded(child: Text(title, style: text.titleLarge)),
+              if (onClear != null)
+                TextButton(onPressed: onClear, child: const Text('Clear')),
+            ],
+          ),
+        ).fadeSlideIn(index: startIndex),
+        SizedBox(
+          height: 148,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: AppSpace.page,
+            itemCount: buildings.length,
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpace.sm),
+            itemBuilder: (context, i) => _PlaceCard(
+              building: buildings[i],
+              onTap: () => showBuildingDetailsSheet(context, buildings[i]),
+            ).fadeSlideIn(index: startIndex + 1 + i, rise: 0.2),
+          ),
+        ),
+      ],
     );
   }
 }

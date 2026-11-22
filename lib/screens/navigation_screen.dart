@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../models/building.dart';
+import '../services/kalman_filter_service.dart';
 import '../services/location_service.dart';
 import '../services/navigation_service.dart';
 import '../services/voice_navigation_controller.dart';
@@ -13,9 +17,12 @@ import '../services/voice_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 import '../theme/map_styles.dart';
+import '../utils/camera_heading.dart';
 import '../utils/map_markers.dart';
 import '../utils/route_geometry.dart';
 import '../widgets/arrival_overlay.dart';
+import '../widgets/location_permission_sheet.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/premium/glass_panel.dart';
 import '../widgets/premium/pressable_scale.dart';
 import 'home_screen.dart';
@@ -54,9 +61,20 @@ class _NavigationScreenState extends State<NavigationScreen> {
   final LocationService _locationService = LocationService();
   final NavigationService _navigationService = NavigationService();
   final VoiceService _voiceService = VoiceService();
-  late final VoiceNavigationController _voice;
-  late final RouteGeometry _geometry;
-  late final List<TurnStep> _steps;
+  // Route state is replaced when rerouting.
+  late RouteInfo _route;
+  late VoiceNavigationController _voice;
+  late RouteGeometry _geometry;
+  late List<TurnStep> _steps;
+
+  final GpsSmoother _smoother = GpsSmoother();
+  late final OffRouteMonitor _offRouteMonitor;
+  bool _rerouting = false;
+  bool _announcedArrivingSoon = false;
+
+  /// Demo "detour": walk sideways off the path until this time.
+  DateTime? _detourUntil;
+  double _detourMeters = 0;
 
   GoogleMapController? _mapController;
   StreamSubscription<dynamic>? _gpsSub;
@@ -65,7 +83,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
   /// Metres walked along the route.
   double _progress = 0;
   LatLng? _position;
+  /// Exact walking direction (drives the blue dot's direction cone).
   double _heading = 0;
+
+  /// Map rotation: eases toward the look-ahead direction of the route.
+  final CameraHeadingSmoother _camHeading = CameraHeadingSmoother();
+  Timer? _cameraTimer;
+  LatLng? _lastCameraTarget;
+  double? _lastCameraBearing;
+  static const _cameraTick = Duration(milliseconds: 150);
   bool _offRoute = false;
   bool _waitingForGps = true;
   bool _gpsFailed = false;
@@ -83,11 +109,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void initState() {
     super.initState();
     _startedAt = DateTime.now();
-    _geometry = RouteGeometry(widget.routeInfo.polylinePoints);
-    _steps = turnStepsFor(widget.routeInfo.campusRoute, _geometry);
-    _voice = VoiceNavigationController(widget.routeInfo.campusRoute, _voiceService);
+    _offRouteMonitor = OffRouteMonitor(
+      // Demo detours trigger quickly so the reroute is easy to show.
+      holdTime: widget.demo
+          ? const Duration(seconds: 3)
+          : const Duration(seconds: 8),
+    );
+    _setRoute(widget.routeInfo);
+    WakelockPlus.enable().catchError((_) {});
     _position = _geometry.points.isEmpty ? null : _geometry.points.first;
     _heading = _geometry.bearingAt(0);
+    _camHeading.reset(lookAheadBearing(_geometry, 0));
+    _cameraTimer = Timer.periodic(_cameraTick, (_) => _onCameraTick());
     MapMarkers.warmUp().then((_) {
       if (mounted) setState(() => _markersReady = true);
     });
@@ -98,8 +131,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void dispose() {
     _gpsSub?.cancel();
     _demoTimer?.cancel();
+    _cameraTimer?.cancel();
     _voice.reset();
     _voiceService.dispose();
+    WakelockPlus.disable().catchError((_) {});
     _mapController?.dispose();
     super.dispose();
   }
@@ -109,7 +144,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     if (!mounted) return;
     unawaited(_voiceService.speak(
       'Starting route to ${widget.endBuilding.name}. '
-      '${widget.routeInfo.campusRoute.estimatedWalkingMinutes} minute walk.',
+      '${widget.routeInfo.campusRoute.estimatedWalkingMinutes} minute walk. '
+      '${_voice.firstTurnHint() ?? ''}',
     ));
     if (widget.demo) {
       setState(() => _waitingForGps = false);
@@ -119,9 +155,30 @@ class _NavigationScreenState extends State<NavigationScreen> {
     }
   }
 
+  void _setRoute(RouteInfo route) {
+    _route = route;
+    _geometry = RouteGeometry(route.polylinePoints);
+    _steps = turnStepsFor(route.campusRoute, _geometry);
+    _voice = VoiceNavigationController(
+      route.campusRoute,
+      _voiceService,
+      steps: _steps,
+    );
+    _progress = 0;
+  }
+
   // ── position sources ───────────────────────────────────────────────────
 
   Future<void> _startGps() async {
+    if (!await explainLocationIfNeeded(context)) {
+      if (mounted) {
+        setState(() {
+          _gpsFailed = true;
+          _waitingForGps = false;
+        });
+      }
+      return;
+    }
     // Ensures permission is granted before opening the stream.
     final first = await _locationService.getCurrentLocation();
     if (!mounted) return;
@@ -132,25 +189,66 @@ class _NavigationScreenState extends State<NavigationScreen> {
       });
       return;
     }
-    _onRawPosition(_locationService.positionToLatLng(first));
+    _onFix(first);
     _gpsSub = _locationService.getPositionStream()?.listen(
-          (p) => _onRawPosition(_locationService.positionToLatLng(p)),
+          _onFix,
           onError: (_) {
             if (mounted) setState(() => _gpsFailed = true);
           },
         );
   }
 
+  void _onFix(Position p) {
+    final raw = _locationService.positionToLatLng(p);
+    final smoothed = _smoother.filter(
+      raw,
+      accuracyMeters: p.accuracy,
+      time: p.timestamp,
+    );
+    _onRawPosition(smoothed);
+  }
+
   void _startDemo() {
     _demoTimer?.cancel();
     _demoTimer = Timer.periodic(_tick, (_) {
-      if (_demoPaused || _arrived) return;
+      if (_demoPaused || _arrived || _rerouting) return;
       final step = kWalkingSpeedMps *
           _demoSpeeds[_demoSpeedIndex] *
           (_tick.inMilliseconds / 1000);
+
+      if (_detourUntil != null) {
+        // Walk sideways away from the path; rerouting takes over from there.
+        _detourMeters = (_detourMeters + step).clamp(0.0, 45.0);
+        final base = _geometry.pointAt(_progress);
+        final off = _offset(base, _heading + 90, _detourMeters);
+        if (DateTime.now().isAfter(_detourUntil!)) _detourUntil = null;
+        _onRawPosition(off);
+        return;
+      }
+
       final next = (_progress + step).clamp(0.0, _geometry.length);
       _applyProgress(next, _geometry.pointAt(next), offRoute: false);
     });
+  }
+
+  void _startDetour() {
+    if (_detourUntil != null || _rerouting || _arrived) return;
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _demoPaused = false;
+      _detourMeters = 0;
+      _detourUntil = DateTime.now().add(const Duration(seconds: 15));
+    });
+  }
+
+  /// Point [meters] from [from] in compass direction [bearingDeg].
+  static LatLng _offset(LatLng from, double bearingDeg, double meters) {
+    final rad = bearingDeg * math.pi / 180;
+    final dLat = meters * math.cos(rad) / 111320;
+    final dLng = meters *
+        math.sin(rad) /
+        (111320 * math.cos(from.latitude * math.pi / 180));
+    return LatLng(from.latitude + dLat, from.longitude + dLng);
   }
 
   void _switchToDemo() {
@@ -171,6 +269,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   }
 
   void _onRawPosition(LatLng raw) {
+    if (_rerouting) return;
     final proj = _geometry.project(raw, minAlong: _progress - 15);
     final onRoute = proj.offsetMeters <= _snapMeters;
     _applyProgress(
@@ -178,6 +277,51 @@ class _NavigationScreenState extends State<NavigationScreen> {
       onRoute ? proj.point : raw,
       offRoute: !onRoute,
     );
+    if (_offRouteMonitor.update(proj.offsetMeters, DateTime.now())) {
+      _reroute(raw);
+    }
+  }
+
+  Future<void> _reroute(LatLng from) async {
+    if (_rerouting || _arrived) return;
+    setState(() => _rerouting = true);
+    unawaited(_voiceService.speak('Rerouting.'));
+    HapticFeedback.mediumImpact();
+
+    final results = await Future.wait<Object?>([
+      _navigationService.calculateRoute(
+        origin: from,
+        destination: _route.endLocation,
+      ),
+      Future<void>.delayed(const Duration(milliseconds: 900)),
+    ]);
+    final fresh = results.first as RouteInfo?;
+    if (!mounted) return;
+
+    if (fresh == null || fresh.polylinePoints.length < 2) {
+      setState(() => _rerouting = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('No path from here. Head back to the blue line.'),
+      ));
+      return;
+    }
+
+    setState(() {
+      _voice.reset();
+      _setRoute(fresh);
+      _rerouting = false;
+      _detourUntil = null;
+      _announcedArrivingSoon = false;
+      _position = from;
+      _heading = _geometry.bearingAt(0);
+      _camHeading.setTarget(lookAheadBearing(_geometry, 0));
+    });
+    unawaited(_voiceService.speak(
+      'New route. ${fresh.campusRoute.estimatedWalkingMinutes} minutes to '
+      '${widget.endBuilding.name}.',
+    ));
+    // Snap onto the new route right away.
+    _onRawPosition(from);
   }
 
   void _applyProgress(double along, LatLng shown, {required bool offRoute}) {
@@ -185,15 +329,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
     final moved = along - _progress;
     final heading = moved.abs() > 0.3 ? _geometry.bearingAt(along) : _heading;
 
-    _voice.onLocationUpdate(shown);
+    _voice.onProgress(along);
     final remaining = (_geometry.length - along).clamp(0.0, double.infinity);
     // checkArrival speaks the arrival message when near the entrance; the end
     // of the path can sit a few metres away, so also arrive there.
-    final nearEntrance =
-        _voice.checkArrival(shown, widget.routeInfo.endLocation);
+    final nearEntrance = _voice.checkArrival(shown, _route.endLocation);
     final arrived = nearEntrance || remaining <= 8;
     if (arrived && !nearEntrance && !_arrived) {
       unawaited(_voiceService.speak('You have arrived at your destination.'));
+    }
+    if (!arrived && !_announcedArrivingSoon && remaining <= 40 && !offRoute) {
+      _announcedArrivingSoon = true;
+      unawaited(_voiceService.speak('${widget.endBuilding.name} is just ahead.'));
     }
 
     setState(() {
@@ -203,16 +350,46 @@ class _NavigationScreenState extends State<NavigationScreen> {
       _offRoute = offRoute;
       _waitingForGps = false;
     });
-    if (_followCamera) _moveCamera();
+    if (!offRoute) _camHeading.setTarget(lookAheadBearing(_geometry, along));
     if (arrived) _onArrived();
+  }
+
+  /// Eases the map rotation and follows the dot, only when something moved.
+  void _onCameraTick() {
+    if (!mounted || !_followCamera) return;
+    final dt = _cameraTick.inMilliseconds / 1000;
+    final rotated = _camHeading.step(dt);
+    final p = _position;
+    if (p == null) return;
+    final moved = _lastCameraTarget == null ||
+        RouteGeometry.distance(_lastCameraTarget!, p) > 0.2;
+    if (!rotated && !moved && _lastCameraBearing == _camHeading.bearing) return;
+    _lastCameraTarget = p;
+    _lastCameraBearing = _camHeading.bearing;
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(CameraPosition(
+        target: p,
+        zoom: 18.6,
+        tilt: 55,
+        bearing: _camHeading.bearing,
+      )),
+      duration: _cameraTick + const Duration(milliseconds: 60),
+    );
   }
 
   void _moveCamera() {
     final p = _position;
     if (p == null) return;
+    _lastCameraTarget = p;
+    _lastCameraBearing = _camHeading.bearing;
     _mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
-        CameraPosition(target: p, zoom: 18.6, tilt: 55, bearing: _heading),
+        CameraPosition(
+          target: p,
+          zoom: 18.6,
+          tilt: 55,
+          bearing: _camHeading.bearing,
+        ),
       ),
     );
   }
@@ -332,7 +509,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
       if (dest != null)
         Marker(
           markerId: const MarkerId('dest'),
-          position: widget.routeInfo.endLocation,
+          position: _route.endLocation,
           icon: dest,
           anchor: const Offset(0.5, 0.96),
           zIndexInt: 4,
@@ -381,10 +558,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
               GoogleMap(
                 style: MapStyles.of(context),
                 initialCameraPosition: CameraPosition(
-                  target: _position ?? widget.routeInfo.startLocation,
+                  target: _position ?? _route.startLocation,
                   zoom: 18.6,
                   tilt: 55,
-                  bearing: _heading,
+                  bearing: _camHeading.bearing,
                 ),
                 minMaxZoomPreference: const MinMaxZoomPreference(15.5, 20),
                 onMapCreated: (c) {
@@ -419,6 +596,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _TurnBanner(
+                        rerouting: _rerouting,
                         step: next,
                         distanceToStep: next == null
                             ? remaining
@@ -447,6 +625,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           ),
                         ],
                       ),
+                      if (!widget.demo) const OfflineBanner(),
                     ],
                   ),
                 ),
@@ -483,6 +662,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                       setState(() => _demoPaused = !_demoPaused),
                   onCycleDemoSpeed: () => setState(() => _demoSpeedIndex =
                       (_demoSpeedIndex + 1) % _demoSpeeds.length),
+                  onDetour: _startDetour,
+                  detouring: _detourUntil != null || _rerouting,
                   onEnd: _confirmEnd,
                 ),
               ),
@@ -527,6 +708,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
 class _TurnBanner extends StatelessWidget {
   const _TurnBanner({
+    required this.rerouting,
     required this.step,
     required this.distanceToStep,
     required this.destinationName,
@@ -534,6 +716,7 @@ class _TurnBanner extends StatelessWidget {
     required this.waitingForGps,
   });
 
+  final bool rerouting;
   final TurnStep? step;
   final double distanceToStep;
   final String destinationName;
@@ -543,23 +726,32 @@ class _TurnBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final icon = waitingForGps
-        ? Icons.gps_not_fixed_rounded
-        : step?.icon ?? Icons.flag_rounded;
-    final title = waitingForGps
-        ? 'Finding your position…'
-        : step?.instruction ?? 'Continue to $destinationName';
-    final now = step != null && distanceToStep <= 15;
+    final icon = rerouting
+        ? Icons.alt_route_rounded
+        : waitingForGps
+            ? Icons.gps_not_fixed_rounded
+            : step?.icon ?? Icons.flag_rounded;
+    final title = rerouting
+        ? 'Finding a new route…'
+        : waitingForGps
+            ? 'Finding your position…'
+            : step?.instruction ?? 'Continue to $destinationName';
+    final now = !rerouting && step != null && distanceToStep <= 15;
+    final showDistance = !waitingForGps && !rerouting;
 
     return AnimatedContainer(
       duration: AppMotion.slow,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: now
+        gradient: rerouting
             ? const LinearGradient(
-                colors: [Color(0xFF3E7BFA), Color(0xFF2E5BD8)],
+                colors: [Color(0xFFF0A93B), Color(0xFFD9822B)],
               )
-            : AppColors.brandGradient,
+            : now
+                ? const LinearGradient(
+                    colors: [Color(0xFF3E7BFA), Color(0xFF2E5BD8)],
+                  )
+                : AppColors.brandGradient,
         borderRadius: AppRadius.lgAll,
         boxShadow: AppShadows.raised(AppColors.primaryDeep),
       ),
@@ -594,7 +786,7 @@ class _TurnBanner extends StatelessWidget {
                 key: ValueKey(title),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!waitingForGps)
+                  if (showDistance)
                     Text(
                       now ? 'Now' : 'In ${formatDistance(distanceToStep)}',
                       style: text.displayMedium?.copyWith(
@@ -720,6 +912,8 @@ class _TripPanel extends StatelessWidget {
     required this.demoSpeed,
     required this.onToggleDemoPause,
     required this.onCycleDemoSpeed,
+    required this.onDetour,
+    required this.detouring,
     required this.onEnd,
   });
 
@@ -731,6 +925,8 @@ class _TripPanel extends StatelessWidget {
   final double demoSpeed;
   final VoidCallback onToggleDemoPause;
   final VoidCallback onCycleDemoSpeed;
+  final VoidCallback onDetour;
+  final bool detouring;
   final VoidCallback onEnd;
 
   @override
@@ -820,6 +1016,13 @@ class _TripPanel extends StatelessWidget {
                       label: '${demoSpeed.toStringAsFixed(0)}×',
                       tooltip: 'Demo speed',
                       onTap: onCycleDemoSpeed,
+                    ),
+                    const SizedBox(width: AppSpace.xs),
+                    _RoundButton(
+                      icon: Icons.alt_route_rounded,
+                      tooltip: 'Simulate a detour (shows rerouting)',
+                      color: detouring ? AppColors.warning : null,
+                      onTap: onDetour,
                     ),
                     const SizedBox(width: AppSpace.xs),
                   ],

@@ -30,6 +30,8 @@ dependencies:
   xml: ^6.0.0
   flutter_animate: ^4.5.2
   google_fonts: ^8.2.1
+  wakelock_plus: ^1.6.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
