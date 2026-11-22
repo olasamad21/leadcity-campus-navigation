@@ -14,6 +14,9 @@ import 'page_transitions.dart';
 class AppTheme {
   AppTheme._();
 
+  /// Set to false in widget tests (no network for downloading the font).
+  static bool useGoogleFonts = true;
+
   static ThemeData get lightTheme => _build(Brightness.light);
   static ThemeData get darkTheme => _build(Brightness.dark);
 
@@ -49,9 +52,10 @@ class AppTheme {
       onError: Colors.white,
     );
 
-    final base = GoogleFonts.plusJakartaSansTextTheme(
-      isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
-    );
+    final plain =
+        isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme;
+    final base =
+        useGoogleFonts ? GoogleFonts.plusJakartaSansTextTheme(plain) : plain;
 
     final textTheme = base.copyWith(
       displayLarge: base.displayLarge?.copyWith(

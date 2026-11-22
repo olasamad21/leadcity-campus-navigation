@@ -79,7 +79,7 @@ class HomeScreen extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   padding: AppSpace.page,
                   itemCount: _quickCategories.length,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (_, _) =>
                       const SizedBox(width: AppSpace.xs),
                   itemBuilder: (context, i) {
                     final c = _quickCategories[i];
@@ -234,7 +234,7 @@ class _Header extends StatelessWidget {
                           child: Image.asset(
                             'assets/images/logo.jpg',
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, _, _) => const Icon(
                               Icons.school_rounded,
                               color: AppColors.primary,
                             ),
@@ -368,7 +368,7 @@ class _PlacesRow extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: AppSpace.page,
             itemCount: buildings.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpace.sm),
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpace.sm),
             itemBuilder: (context, i) => _PlaceCard(
               building: buildings[i],
               onTap: () => showBuildingDetailsSheet(context, buildings[i]),

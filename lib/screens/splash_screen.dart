@@ -82,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       child: Image.asset(
                         'assets/images/logo.jpg',
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, _, _) => const Icon(
                           Icons.school_rounded,
                           size: 64,
                           color: AppColors.primary,

@@ -83,7 +83,7 @@ class AppPageRoute<T> extends PageRouteBuilder<T> {
       : super(
           transitionDuration: AppMotion.slow,
           reverseTransitionDuration: AppMotion.medium,
-          pageBuilder: (context, _, __) => builder(context),
+          pageBuilder: (context, _, _) => builder(context),
           transitionsBuilder: (context, animation, secondary, child) =>
               SharedAxisTransition(
             animation: animation,

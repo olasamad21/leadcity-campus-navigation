@@ -8,49 +8,43 @@ class BuildingsData {
   // Lead City University campus center coordinates
   static const LatLng campusCenter = LatLng(7.32607, 3.88041);
 
-  // Cache for KML-loaded buildings
   static List<Building>? _kmlBuildings;
-  static bool _isLoading = false;
-  static bool _loadAttempted = false;
+  static List<Building>? _fallbackBuildings;
+  static Future<List<Building>>? _loading;
 
-  /// Load buildings from KML file
-  static Future<List<Building>> loadFromKml() async {
-    if (_kmlBuildings != null) {
-      return _kmlBuildings!;
-    }
+  // Lookup indexes for the list currently in use (rebuilt when it changes).
+  static List<Building>? _indexedList;
+  static Map<String, Building> _byId = const {};
+  static Map<String, Building> _byName = const {};
 
-    if (_isLoading) {
-      while (_isLoading) {
-        await Future.delayed(const Duration(milliseconds: 100));
+  /// Loads buildings from the bundled KML once; concurrent callers share the
+  /// same load. Falls back to the built-in list if parsing fails.
+  static Future<List<Building>> loadFromKml() {
+    final ready = _kmlBuildings;
+    if (ready != null) return Future.value(ready);
+    return _loading ??= () async {
+      try {
+        _kmlBuildings = await KmlParserService().parseKmlFile(
+          'assets/Lead City University Campus Map.kml',
+        );
+        return _kmlBuildings!;
+      } catch (e) {
+        _loading = null; // allow a later retry
+        return getAllBuildings();
       }
-      return _kmlBuildings ?? _getHardcodedBuildings();
-    }
-
-    _isLoading = true;
-    _loadAttempted = true;
-
-    try {
-      final parser = KmlParserService();
-      _kmlBuildings = await parser.parseKmlFile(
-        'assets/Lead City University Campus Map.kml',
-      );
-      _isLoading = false;
-      return _kmlBuildings!;
-    } catch (e) {
-      _isLoading = false;
-      return _getHardcodedBuildings();
-    }
+    }();
   }
 
-  /// Get all buildings (uses KML if loaded, otherwise hardcoded)
-  static List<Building> getAllBuildings() {
-    if (_kmlBuildings != null) {
-      return _kmlBuildings!;
-    }
-    if (!_loadAttempted) {
-      return _getHardcodedBuildings();
-    }
-    return _getHardcodedBuildings();
+  /// All buildings: the KML list once loaded, otherwise the built-in list.
+  static List<Building> getAllBuildings() =>
+      _kmlBuildings ?? (_fallbackBuildings ??= _getHardcodedBuildings());
+
+  static void _ensureIndex() {
+    final list = getAllBuildings();
+    if (identical(list, _indexedList)) return;
+    _indexedList = list;
+    _byId = {for (final b in list) b.id: b};
+    _byName = {for (final b in list) b.name.toLowerCase(): b};
   }
 
   /// Get hardcoded buildings (fallback data)
@@ -880,34 +874,15 @@ class BuildingsData {
     ];
   }
 
-  /// Get building by ID
+  /// Building with [id], or null. Instant (indexed) lookup.
   static Building? getBuildingById(String id) {
-    try {
-      return getAllBuildings().firstWhere(
-            (building) => building.id == id,
-      );
-    } catch (e) {
-      return null;
-    }
+    _ensureIndex();
+    return _byId[id];
   }
 
-  /// Get building by name
+  /// Building whose name matches [name] ignoring case, or null.
   static Building? getBuildingByName(String name) {
-    try {
-      return getAllBuildings().firstWhere(
-            (building) => building.name.toLowerCase() == name.toLowerCase(),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Search buildings by query
-  static List<Building> searchBuildings(String query) {
-    final lowerQuery = query.toLowerCase();
-    return getAllBuildings().where((building) {
-      return building.name.toLowerCase().contains(lowerQuery) ||
-          building.type.toLowerCase().contains(lowerQuery);
-    }).toList();
+    _ensureIndex();
+    return _byName[name.toLowerCase()];
   }
 }

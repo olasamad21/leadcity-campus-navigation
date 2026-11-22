@@ -86,7 +86,7 @@ class _ArrivalOverlayState extends State<ArrivalOverlay>
           child: IgnorePointer(
             child: AnimatedBuilder(
               animation: _burst,
-              builder: (_, __) => CustomPaint(
+              builder: (_, _) => CustomPaint(
                 painter: _ConfettiPainter(_particles, _burst.value),
               ),
             ),

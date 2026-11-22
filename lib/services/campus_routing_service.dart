@@ -14,8 +14,10 @@ class CampusRoutingService {
   /// Graph used for routing (same instance [calculateRoute] uses).
   CampusGraph get graph => _graph;
 
-  /// Dijkstra shortest paths; edge weights are [CampusEdge.distanceMeters].
-  /// Frontier: unvisited nodes, sorted ascending by tentative distance each step.
+  /// Dijkstra shortest path; edge weights are [CampusEdge.distanceMeters].
+  ///
+  /// Uses the graph's prebuilt [CampusGraph.adjacency] and a binary-heap
+  /// frontier, so each step is O(log V) instead of re-sorting every node.
   List<String>? findPath(String startNodeId, String endNodeId) {
     if (!_graph.nodes.containsKey(startNodeId) ||
         !_graph.nodes.containsKey(endNodeId)) {
@@ -25,49 +27,27 @@ class CampusRoutingService {
       return [startNodeId];
     }
 
-    final dist = <String, double>{
-      for (final id in _graph.nodes.keys) id: double.infinity,
-    };
+    final dist = <String, double>{startNodeId: 0};
     final prev = <String, String>{};
-    final visited = <String>{};
+    final done = <String>{};
+    final frontier = _MinHeap()..push(0, startNodeId);
+    final adjacency = _graph.adjacency;
 
-    dist[startNodeId] = 0;
-
-    while (visited.length < _graph.nodes.length) {
-      final unvisitedIds =
-          _graph.nodes.keys.where((id) => !visited.contains(id)).toList();
-
-      unvisitedIds.sort((a, b) => dist[a]!.compareTo(dist[b]!));
-
-      String? u;
-      for (final id in unvisitedIds) {
-        if (dist[id]!.isFinite) {
-          u = id;
-          break;
-        }
-      }
-      if (u == null) break;
-
-      visited.add(u);
-
-      if (u == endNodeId) {
-        break;
-      }
-
-      for (final neighbour in _graph.getNeighbours(u)) {
-        final nid = neighbour.id;
-        final w = _graph.getEdgeDistance(u, nid);
-        if (!w.isFinite) continue;
-
-        final alt = dist[u]! + w;
-        if (alt < dist[nid]!) {
-          dist[nid] = alt;
-          prev[nid] = u;
+    while (frontier.isNotEmpty) {
+      final (d, u) = frontier.pop();
+      if (!done.add(u)) continue; // stale heap entry
+      if (u == endNodeId) break;
+      for (final (v, w) in adjacency[u] ?? const <(String, double)>[]) {
+        final alt = d + w;
+        if (alt < (dist[v] ?? double.infinity)) {
+          dist[v] = alt;
+          prev[v] = u;
+          frontier.push(alt, v);
         }
       }
     }
 
-    if (dist[endNodeId] == double.infinity) {
+    if (!dist.containsKey(endNodeId)) {
       return null;
     }
 
@@ -127,5 +107,50 @@ class CampusRoutingService {
       cur = p;
     }
     return reversed.reversed.toList();
+  }
+}
+
+/// Minimal binary min-heap of (distance, nodeId) for Dijkstra.
+class _MinHeap {
+  final List<(double, String)> _items = [];
+
+  bool get isNotEmpty => _items.isNotEmpty;
+
+  void push(double priority, String id) {
+    _items.add((priority, id));
+    var i = _items.length - 1;
+    while (i > 0) {
+      final parent = (i - 1) >> 1;
+      if (_items[parent].$1 <= _items[i].$1) break;
+      final tmp = _items[parent];
+      _items[parent] = _items[i];
+      _items[i] = tmp;
+      i = parent;
+    }
+  }
+
+  (double, String) pop() {
+    final top = _items.first;
+    final last = _items.removeLast();
+    if (_items.isNotEmpty) {
+      _items[0] = last;
+      var i = 0;
+      while (true) {
+        final l = 2 * i + 1, r = l + 1;
+        var smallest = i;
+        if (l < _items.length && _items[l].$1 < _items[smallest].$1) {
+          smallest = l;
+        }
+        if (r < _items.length && _items[r].$1 < _items[smallest].$1) {
+          smallest = r;
+        }
+        if (smallest == i) break;
+        final tmp = _items[smallest];
+        _items[smallest] = _items[i];
+        _items[i] = tmp;
+        i = smallest;
+      }
+    }
+    return top;
   }
 }

@@ -422,9 +422,9 @@ Home Screen
 
 **Quota note:** Usage is driven by **map loads / tile traffic**, not per-route HTTP calls. Monitor Maps Platform billing as usual.
 
-### 9.2 Legacy API key hook (`NavigationService.setApiKey`)
+### 9.2 API keys in Dart code
 
-`NavigationService` retains an optional `GOOGLE_MAPS_API_KEY` compile-time flag / `setApiKey` for backwards compatibility with older startup samples; **pathfinding does not consume this key**. Operational Maps rendering relies on the **native Android Maps key** described above.
+None. The Dart code holds no API key and makes no routing API calls; the only key is the **native Android Maps key** described above, used by the Maps SDK to draw the map.
 
 ### 9.3 Automated testing (routing)
 

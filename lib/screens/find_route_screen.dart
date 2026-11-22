@@ -619,24 +619,24 @@ class _RouteSummary extends StatelessWidget {
                 children: [
                   _Stat(
                     icon: Icons.straighten_rounded,
+                    caption: 'Distance',
                     child: CountUpText(
                       value: campus.totalDistanceMeters,
                       format: formatDistance,
                       style: text.titleMedium,
                     ),
-                    caption: 'Distance',
                   ),
                   const SizedBox(width: AppSpace.lg),
                   _Stat(
                     icon: Icons.turn_right_rounded,
-                    child: Text('$turns', style: text.titleMedium),
                     caption: turns == 1 ? 'Turn' : 'Turns',
+                    child: Text('$turns', style: text.titleMedium),
                   ),
                   const SizedBox(width: AppSpace.lg),
                   _Stat(
                     icon: Icons.record_voice_over_rounded,
-                    child: Text('On', style: text.titleMedium),
                     caption: 'Voice',
+                    child: Text('On', style: text.titleMedium),
                   ),
                 ],
               ),
@@ -655,7 +655,7 @@ class _RouteSummary extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.icon, required this.child, required this.caption});
+  const _Stat({required this.icon, required this.caption, required this.child});
 
   final IconData icon;
   final Widget child;

@@ -58,20 +58,6 @@ class NavigationService {
     );
   }
 
-  /// Kept for compatibility with existing startup code ([app.dart]); the map
-  /// SDK may still use a native key — routing no longer calls Google Directions.
-  static String _apiKey = const String.fromEnvironment(
-    'GOOGLE_MAPS_API_KEY',
-    defaultValue: '',
-  );
-
-  /// Set Maps API key programmatically (routing ignores it).
-  static void setApiKey(String key) {
-    _apiKey = key;
-  }
-
-  static String get apiKey => _apiKey;
-
   /// Snaps onto the walkway graph and runs shortest-path routing.
   ///
   /// Returns `null` when there is **no graph path** between the nearest nodes

@@ -39,31 +39,45 @@ class CampusGraph {
   final List<CampusEdge> edges;
   CampusGraph({required this.nodes, required this.edges});
 
+  /// Edge lookup by node pair (both directions), built once on first use.
+  late final Map<String, CampusEdge> _edgeIndex = {
+    for (final e in edges) ...{
+      _key(e.fromId, e.toId): e,
+      _key(e.toId, e.fromId): e,
+    },
+  };
+
+  /// Walkable neighbours with their distances, built once on first use.
+  /// Only links backed by a measured edge are included.
+  late final Map<String, List<(String, double)>> adjacency = {
+    for (final n in nodes.values)
+      n.id: [
+        for (final other in n.connectedNodeIds)
+          if (nodes.containsKey(other) && _edgeIndex[_key(n.id, other)] != null)
+            (other, _edgeIndex[_key(n.id, other)]!.distanceMeters),
+      ],
+  };
+
+  static String _key(String a, String b) => '$a|$b';
+
   List<CampusNode> getNeighbours(String nodeId) {
     final node = nodes[nodeId];
     if (node == null) return [];
     return node.connectedNodeIds.map((id) => nodes[id]).whereType<CampusNode>().toList();
   }
 
-  double getEdgeDistance(String fromId, String toId) {
-    for (final edge in edges) {
-      if ((edge.fromId == fromId && edge.toId == toId) ||
-          (edge.fromId == toId && edge.toId == fromId))
-        return edge.distanceMeters;
-    }
-    return double.infinity;
-  }
+  double getEdgeDistance(String fromId, String toId) =>
+      _edgeIndex[_key(fromId, toId)]?.distanceMeters ?? double.infinity;
 
-  String? getEdgeInstruction(String fromId, String toId) {
-    for (final edge in edges) {
-      if (edge.fromId == fromId && edge.toId == toId) return edge.voiceInstruction;
-      if (edge.fromId == toId && edge.toId == fromId) return edge.voiceInstruction;
-    }
-    return null;
-  }
+  /// Stored survey label for the edge (either direction); see
+  /// [isTurnInstruction] for why guidance no longer uses these.
+  String? getEdgeInstruction(String fromId, String toId) =>
+      _edgeIndex[_key(fromId, toId)]?.voiceInstruction;
 
   String getNearestNodeId(LatLng position) {
-    if (nodes.isEmpty) throw StateError('getNearestNodeId: graph has no nodes');
+    if (nodes.isEmpty) {
+      throw StateError('getNearestNodeId: graph has no nodes');
+    }
     String? nearestId;
     double nearestDist = double.infinity;
     for (final entry in nodes.entries) {
@@ -81,24 +95,11 @@ class CampusGraph {
   /// at the START of the edge, walked in the survey direction only. Guidance
   /// uses shape-based turns instead (see `detectTurns` in route_geometry.dart).
   ///
-  /// True for instructions that are spoken during navigation (left/right turns).
-  /// Shared by [getRouteInstructions] and the voice controller so the
-  /// instruction list and its maneuver anchors always stay aligned.
+  /// True for left/right instruction text.
   static bool isTurnInstruction(String? instruction) {
     if (instruction == null) return false;
     final lower = instruction.toLowerCase();
     return lower.contains('left') || lower.contains('right');
-  }
-
-  List<String> getRouteInstructions(List<String> nodeIds) {
-    final instructions = <String>[];
-    for (int i = 0; i < nodeIds.length - 1; i++) {
-      final instr = getEdgeInstruction(nodeIds[i], nodeIds[i + 1]);
-      if (isTurnInstruction(instr)) {
-        instructions.add(instr!);
-      }
-    }
-    return instructions;
   }
 
   static double _haversineDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
