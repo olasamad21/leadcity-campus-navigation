@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:xml/xml.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/building.dart';
+import '../data/building_categories.dart';
 
 /// Service for parsing KML files from Google My Maps
 class KmlParserService {
@@ -73,7 +74,8 @@ class KmlParserService {
 
       // Create Building objects
       final List<Building> buildingList = [];
-      
+      final Set<String> usedEntranceKeys = {};
+
       for (var entry in buildings.entries) {
         final buildingName = entry.key;
         final placemark = entry.value;
@@ -116,11 +118,15 @@ class KmlParserService {
         LatLng entrancePoint;
         if (entrances.containsKey(buildingName)) {
           entrancePoint = entrances[buildingName]!;
+          usedEntranceKeys.add(buildingName);
         } else {
           // Try fuzzy matching for entrance names
           LatLng? matchedEntrance = _findMatchingEntrance(buildingName, entrances);
           if (matchedEntrance != null) {
             entrancePoint = matchedEntrance;
+            usedEntranceKeys.addAll(entrances.entries
+                .where((e) => e.value == matchedEntrance)
+                .map((e) => e.key));
           } else {
             // Calculate centroid if no entrance found
             entrancePoint = _calculateCentroid(polygonCoordinates);
@@ -140,6 +146,29 @@ class KmlParserService {
             type: buildingType,
             entrancePoint: entrancePoint,
             polygonCoordinates: polygonCoordinates,
+          ),
+        );
+      }
+
+      // Entrance points with no building outline (e.g. "Campus Entrance",
+      // "Enterprise Entrance") become point-only places — but only when the
+      // owner has given them a category, so stray points never appear.
+      for (final entry in entrances.entries) {
+        if (usedEntranceKeys.contains(entry.key)) continue;
+        final fullName = '${entry.key} Entrance';
+        final String? placeName = categoryForBuildingName(fullName) != null
+            ? fullName
+            : categoryForBuildingName(entry.key) != null
+                ? entry.key
+                : null;
+        if (placeName == null) continue;
+        buildingList.add(
+          Building(
+            id: _generateId(placeName),
+            name: placeName,
+            type: _inferBuildingType(placeName),
+            entrancePoint: entry.value,
+            polygonCoordinates: const [],
           ),
         );
       }
@@ -214,6 +243,11 @@ class KmlParserService {
 
   /// Infer building type from name
   String _inferBuildingType(String name) {
+    // Owner-assigned categories win; the keyword rules below are only a
+    // fallback for buildings added to the KML later.
+    final assigned = categoryForBuildingName(name);
+    if (assigned != null) return assigned.label;
+
     final lower = name.toLowerCase();
     
     if (lower.contains('faculty') || 

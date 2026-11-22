@@ -46,3 +46,4 @@ app.*.map.json
 
 # Android local properties (contains API keys and SDK paths)
 android/local.properties
+android/.gradle

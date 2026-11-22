@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart'; // <--- ADD THIS IMPORT
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../data/building_categories.dart';
+import 'building_category.dart';
 
 /// Building data model representing a campus building
 class Building {
@@ -32,7 +33,7 @@ class Building {
       polygonCoordinates: (json['polygonCoordinates'] as List)
           .map((coord) => LatLng(
                 (coord as Map<String, dynamic>)['latitude'] as double,
-                (coord as Map<String, dynamic>)['longitude'] as double,
+                coord['longitude'] as double,
               ))
           .toList(),
       description: json['description'] as String?,
@@ -59,17 +60,9 @@ class Building {
     };
   }
 
-  /// Get building polygon for Google Maps
-  Polygon getPolygon({required String buildingId, required int color}) {
-    return Polygon(
-      polygonId: PolygonId(buildingId),
-      points: polygonCoordinates,
-      fillColor: Color(color),      // <--- CHANGED: Wrapped in Color()
-      strokeColor: Color(color),    // <--- CHANGED: Wrapped in Color()
-      strokeWidth: 2,
-      geodesic: false,
-    );
-  }
+  /// Owner-assigned category for this building name, falling back to [type].
+  BuildingCategory get category =>
+      categoryForBuildingName(name) ?? BuildingCategory.fromType(type);
 
   @override
   String toString() => 'Building(name: $name, type: $type)';

@@ -1,11 +1,11 @@
 # Lead City University Navigation System
 ## Project Overview Document
 
-**Version:** 1.0  
-**Date:** December 21, 2024  
+**Version:** 2.0  
+**Date:** May 16, 2026  
 **Project Type:** Final Year Project  
 **Institution:** Lead City University, Ibadan, Nigeria  
-**Status:** Development Phase
+**Status:** Active development — core routing implemented on-device (campus graph + Dijkstra)
 
 ---
 
@@ -27,7 +27,7 @@ A mobile Android application that provides:
 - Turn-by-turn navigation between campus locations
 - Voice-guided directions
 - Searchable building directory
-- Real-time route calculation
+- On-device route calculation over a campus walkway graph (no third-party routing API)
 
 ---
 
@@ -44,6 +44,8 @@ A mobile Android application that provides:
 ✅ Route preview before navigation  
 ✅ Mute/unmute voice guidance  
 ✅ Android mobile application  
+✅ Custom shortest-path routing (Dijkstra) on a GPS-derived campus path network  
+✅ Turn instructions driven by graph edge metadata (proximity-based voice cues during navigation)  
 
 ### 2.2 Out of Scope (Future Enhancements)
 ❌ iOS application (Phase 2)  
@@ -58,11 +60,11 @@ A mobile Android application that provides:
 ❌ Event notifications  
 
 ### 2.3 Constraints
-- Internet connectivity required
-- GPS-enabled Android device required
+- Internet connectivity typically required for Google Maps base tiles (standard SDK behaviour); **route solving itself does not call external routing APIs**
+- GPS-enabled Android device required for live navigation and snapping to the graph
 - Minimum Android API Level 21 (Android 5.0)
-- Outdoor navigation only (GPS signal required)
-- Google Maps API free tier limits (sufficient for campus use)
+- Outdoor navigation only (GPS signal required for reliable live positioning)
+- Google Maps SDK usage remains subject to platform quotas (map display only — **not** Directions/Places)
 
 ---
 
@@ -76,11 +78,11 @@ A mobile Android application that provides:
 - **UI Components:** Material Design 3
 
 **Backend/Services:**
-- **Maps:** Google Maps SDK for Android
-- **Routing:** Google Directions API
-- **Search:** Google Places API
-- **Geolocation:** Google Geolocation API
-- **Voice:** Flutter Text-to-Speech (flutter_tts)
+- **Maps:** Google Maps SDK for Android (`google_maps_flutter`) — base map, polygons, markers, polylines
+- **Routing:** **On-device custom engine** — weighted campus graph + **Dijkstra shortest paths** (`CampusRoutingService`), orchestrated by `NavigationService` (no Directions HTTP API)
+- **Search:** **Local** building directory — autocomplete over KML-loaded / fallback building lists (no Places API)
+- **Geolocation:** Device GPS via **`geolocator`** (no Google Geolocation API)
+- **Voice:** Flutter Text-to-Speech (`flutter_tts`); proximity-triggered cues via `VoiceNavigationController`
 
 **Development Tools:**
 - **IDE:** Visual Studio Code / Android Studio
@@ -109,25 +111,25 @@ A mobile Android application that provides:
 │  └─────────────────────────────────┘   │
 │  ┌─────────────────────────────────┐   │
 │  │   Business Logic Layer          │   │
-│  │  - Navigation Controller        │   │
-│  │  - Location Service             │   │
-│  │  - Voice Guidance Service       │   │
-│  │  - Search Service               │   │
+│  │  - NavigationService            │   │
+│  │  - CampusRoutingService         │   │
+│  │    (Dijkstra on walkway graph)   │   │
+│  │  - LocationService (GPS)        │   │
+│  │  - VoiceService / VoiceNav      │   │
+│  │  - KML parser (buildings)       │   │
 │  └─────────────────────────────────┘   │
 │  ┌─────────────────────────────────┐   │
 │  │   Data Layer                    │   │
-│  │  - Campus Building Data         │   │
-│  │  - Building Coordinates         │   │
-│  │  - Entrance Points              │   │
+│  │  - Campus graph (nodes/edges)   │   │
+│  │  - Building polygons & entrances│   │
+│  │    (KML asset + fallback Dart)  │   │
 │  └─────────────────────────────────┘   │
 └─────────────────────────────────────────┘
-              ↓ API Calls
+              ↓ Map tiles / SDK (routing local)
 ┌─────────────────────────────────────────┐
-│      External Services                  │
-│  - Google Maps SDK                      │
-│  - Google Directions API                │
-│  - Google Places API                    │
-│  - Device GPS                           │
+│      External / Platform Services       │
+│  - Google Maps SDK (display only)       │
+│  - Device GPS + OS location permissions │
 └─────────────────────────────────────────┘
 ```
 
@@ -172,14 +174,29 @@ A mobile Android application that provides:
 
 **Spatial Accuracy:** ±5-10 meters (appropriate for pedestrian wayfinding)  
 **Completeness:** 42 campus buildings (100% of major facilities)  
-**Timeliness:** Data collected December 2024 (current)  
+**Timeliness:** Building footprints digitized December 2024; walkway routing graph updated May 2026 (see §4.4)  
 **Format:** KML (industry-standard GIS format)
+
+### 4.4 Campus walkway graph (routing network)
+
+**Purpose:** Pedestrian routes follow actual paths on campus, not arbitrary straight lines or commercial road networks.
+
+**Current implementation (codebase):**
+- A **CampusGraph** is defined in Dart (`lib/data/campus_graph.dart`): hundreds of **nodes** (GPS points) and **edges** (walkway segments) with **Haversine-derived lengths** in metres.
+- Edge records may carry optional **voice instructions** (e.g. turn left/right) used for turn-by-turn and TTS.
+- The graph was produced from a **systematic campus GPS walk / trace** (GPX-derived workflow), summarized in-code as **434 nodes**, **424 path edges**, **335 junction connections**, covering **~8.2 km** of captured paths (metadata as of May 2026).
+
+**Routing algorithm:** `CampusRoutingService` runs **Dijkstra's algorithm** on this graph (non-negative edge weights = segment lengths). Start/end building entrances are **snapped to the nearest graph node**, then the shortest path is decoded into a polyline and instruction list for the UI and voice layer.
 
 ---
 
 ## 5. CAMPUS DATA INVENTORY
 
-### 5.1 Buildings Mapped (42 Total)
+### 5.1 Buildings mapped
+
+Building footprints and entrance coordinates are loaded at runtime from the bundled KML asset **`assets/Lead City University Campus Map.kml`** (parsed by `KmlParserService`), with a **hardcoded Dart fallback** if parsing fails. The inventory below reflects the original digitization target (**42 major facilities**); the live app always reflects whatever placemarks are present in the shipped KML.
+
+### 5.2 Buildings list (target inventory — 42)
 
 **Academic Buildings (17):**
 1. Library
@@ -284,16 +301,17 @@ So that I know what facilities are inside
 
 #### Feature 5: Route Finding
 - Select start and destination from building list
-- Autocomplete input for both fields
-- Display route preview on map
-- Show estimated distance and walking time
+- Autocomplete input for both fields (local search, no Places API)
+- **On-device** shortest path via campus graph + **Dijkstra**
+- Display route preview on map (polyline along walkway nodes)
+- Show estimated distance and walking time (distance sum on graph; time from assumed walking speed in code)
 - "Start Navigation" button
+- **No-path handling:** if entrances snap to disconnected components or data gaps exist, the app shows that **no route is available** (must not assume connectivity)
 
 #### Feature 6: Turn-by-Turn Navigation
-- Real-time directions ("Turn left in 50 meters")
-- Visual route on map
-- Current location updates
-- Voice guidance (TTS)
+- **Graph-based** maneuver prompts where edges define voice text; live navigation uses **proximity** to maneuver nodes for staged prompts (e.g. approach vs. "now")
+- Visual route on map; user location updates from GPS
+- Voice guidance (TTS) via `VoiceNavigationController`
 - Mute/unmute toggle
 - Arrival notification
 
@@ -308,9 +326,9 @@ So that I know what facilities are inside
 
 ### 7.1 Performance
 - App launch time: < 3 seconds
-- Map load time: < 5 seconds
-- Route calculation: < 3 seconds
-- Voice guidance delay: < 1 second
+- Map load time: < 5 seconds (network-dependent)
+- **Route calculation:** typically **well under 1 second** (in-memory graph search on device)
+- Voice guidance delay: < 1 second after proximity thresholds
 - Smooth 60 FPS UI rendering
 
 ### 7.2 Usability
@@ -321,13 +339,14 @@ So that I know what facilities are inside
 - Simple navigation flow (max 3 taps to any feature)
 
 ### 7.3 Reliability
-- 99% uptime (dependent on Google services)
-- Graceful error handling
-- Network connectivity error messages
+- Map display availability tied to Google Maps SDK / connectivity; **routing logic does not depend on Directions API uptime**
+- Graceful error handling when **no graph path** exists between snapped endpoints
+- Network connectivity messages where map tiles fail to load
 - GPS unavailable warnings
 
 ### 7.4 Security
-- API key restricted to application package
+- **Maps SDK API key** injected at build time from `android/local.properties` (`GOOGLE_MAPS_API_KEY`) into the Android manifest — restrict by package / signing certificate in Google Cloud
+- No routing API keys required for core pathfinding (graph is embedded in the app)
 - No storage of personal user data
 - No authentication required (public app)
 
@@ -383,58 +402,47 @@ Home Screen
 
 ---
 
-## 9. API INTEGRATION
+## 9. MAP & LOCATION INTEGRATION
 
-### 9.1 Google Maps APIs
+### 9.1 Google Maps SDK (display layer only)
 
-**API Key:** AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ
+**Purpose:** Render the campus base map, building polygons, user marker, and route polyline.
 
-**Enabled Services:**
-1. **Maps SDK for Android**
-   - Displays base map
-   - Renders custom polygons
-   - Shows user location
-   - Free tier: 28,000 map loads/month
+**API key configuration (Android):**
+- Key read from `android/local.properties` as `GOOGLE_MAPS_API_KEY` and passed into the manifest via Gradle `manifestPlaceholders` (`android/app/build.gradle.kts`).
+- Restrict in Google Cloud Console by Android package **`com.leadcity.leadcity_navigation`** and signing certificate(s).
 
-2. **Directions API**
-   - Calculates walking routes
-   - Provides turn-by-turn instructions
-   - Free tier: 2,000 requests/month
+**Enabled product:**
+- **Maps SDK for Android** — map tiles, overlays, camera controls.
 
-3. **Places API**
-   - Autocomplete for building search
-   - Location suggestions
-   - Free tier: Adequate for campus use
+**Not used for routing (current codebase):**
+- ~~Directions API~~ — replaced by **on-device Dijkstra** over `campusGraph`.
+- ~~Places API~~ — building search is **in-app** over parsed KML / local lists.
+- ~~Geolocation API~~ — fixes come from **`geolocator`** + OS permissions.
 
-4. **Geolocation API**
-   - Determines user location
-   - GPS coordinate processing
+**Quota note:** Usage is driven by **map loads / tile traffic**, not per-route HTTP calls. Monitor Maps Platform billing as usual.
 
-**API Restrictions:**
-- Restricted to Android apps only
-- Package name: com.leadcity.leadcity_navigation
-- Maps SDK for Android enabled
+### 9.2 API keys in Dart code
 
-**Usage Estimates (Monthly):**
-- Expected users: 500-2000 students
-- Average sessions: 3-5 per user per month
-- Total map loads: ~5,000/month (well within free tier)
-- Route calculations: ~1,000/month (within free tier)
+None. The Dart code holds no API key and makes no routing API calls; the only key is the **native Android Maps key** described above, used by the Maps SDK to draw the map.
 
-### 9.2 Error Handling
+### 9.3 Automated testing (routing)
 
-**Network Issues:**
-- Display: "No internet connection. Please check your network."
-- Retry button provided
+Unit tests exercise graph routing and voice-controller behaviour using isolated small graphs — see `test/campus_routing_test.dart`.
 
-**GPS Issues:**
-- Display: "GPS signal unavailable. Please move to an open area."
-- Fallback to manual location selection
+### 9.4 Error handling
 
-**API Errors:**
-- Graceful degradation
-- User-friendly error messages
-- Log errors for debugging
+**Network issues:**
+- Map tiles may fail to load without connectivity — surface a clear message and retry where appropriate.
+
+**GPS issues:**
+- Prompt user to enable location services / permissions; fall back to selecting buildings manually for preview routes where applicable.
+
+**No route on graph:**
+- Treat as a **data / connectivity-of-graph** problem (snapped start/end not connected); display **route unavailable** and avoid silent failure.
+
+**Maps SDK errors:**
+- User-readable messaging and logs for debugging (invalid/restricted API key, billing, etc.).
 
 ---
 
@@ -453,29 +461,25 @@ Home Screen
 - Google Cloud API setup
 - Campus data collection and digitization
 
-**Phase 2: Core Development (IN PROGRESS)**
-- App structure setup
-- Map view implementation
-- Building data integration
-- Basic navigation
+**Phase 2: Core map & data (COMPLETED ✓)**
+- Flutter app structure, themed UI shell
+- Map view with KML-driven buildings
+- Location permissions and GPS read (`LocationService`)
 
-**Phase 3: Feature Implementation**
-- Route finding
-- Turn-by-turn navigation
-- Voice guidance
-- Building search
+**Phase 3: Routing & navigation (COMPLETED ✓ — iterative refinement ongoing)**
+- Campus walkway graph data (`campus_graph.dart`)
+- **Dijkstra** shortest-path routing (`CampusRoutingService`)
+- Route preview, live navigation screen, polyline rendering
+- Voice guidance pipeline (`VoiceService`, `VoiceNavigationController`)
 
-**Phase 4: Testing & Refinement**
-- On-campus testing
-- Bug fixes
-- UI improvements
-- Performance optimization
+**Phase 4: Testing & Refinement (IN PROGRESS)**
+- On-campus field testing
+- Graph completeness / instruction coverage improvements
+- Bug fixes, UX polish, performance passes
 
-**Phase 5: Documentation & Deployment**
-- User manual
-- Technical documentation
-- GitHub repository
-- Release APK generation
+**Phase 5: Documentation & Deployment (ONGOING)**
+- User manual & technical docs aligned with on-device routing
+- Release APK / distribution
 
 ---
 
@@ -483,24 +487,21 @@ Home Screen
 
 ### 11.1 Milestones
 
-| Milestone | Target Date | Status |
-|-----------|-------------|--------|
-| Environment Setup | Dec 16-18, 2024 | ✅ Complete |
-| Google Cloud API Setup | Dec 21, 2024 | ✅ Complete |
-| Campus Data Collection | Dec 21, 2024 | ✅ Complete |
-| Code Integration | Dec 22, 2024 | 🔄 In Progress |
-| Feature Implementation | Dec 23-24, 2024 | ⏳ Pending |
-| Testing & Debugging | Dec 25-26, 2024 | ⏳ Pending |
-| Documentation | Dec 27-28, 2024 | ⏳ Pending |
-| Final Deployment | Dec 29, 2024 | ⏳ Pending |
-| Project Defense | Jan 2025 | ⏳ Pending |
+| Milestone | Target / as of | Status |
+|-----------|------------------|--------|
+| Environment Setup | Dec 2024 | ✅ Complete |
+| Maps SDK key & Android build pipeline | Dec 2024 – 2025 | ✅ Complete |
+| Campus building KML digitization | Dec 2024 | ✅ Complete |
+| Walkway graph capture & graph integration | May 2026 | ✅ Complete |
+| Custom Dijkstra routing & route preview | May 2026 | ✅ Complete |
+| Live navigation + voice cues | May 2026 | ✅ Complete (tuning ongoing) |
+| Field validation & edge-case handling | 2026 | 🔄 In Progress |
+| Documentation / thesis chapters sync | 2026 | 🔄 In Progress |
+| Final APK & defense | Per academic calendar | ⏳ Scheduled |
 
 ### 11.2 Estimated Effort
-- **Total Development Time:** 10-12 days
-- **Setup & Data:** 3 days (complete)
-- **Core Development:** 3-4 days
-- **Testing & Polish:** 2-3 days
-- **Documentation:** 2 days
+
+Initial MVP scaffolding was on the order of **days–weeks**; the **custom graph + routing layer** is a substantial additional engineering and data-collection effort (GPS tracing, graph authoring, instruction QA). Ongoing effort focuses on **accuracy**, **coverage**, and **usability** rather than core algorithm work.
 
 ---
 
@@ -509,10 +510,10 @@ Home Screen
 ### 12.1 Technical Deliverables
 1. ✅ Functional Android APK
 2. ✅ Complete source code on GitHub
-3. ✅ Campus building data (KML format)
-4. ✅ Google Maps API integration
-5. ✅ README.md with setup instructions
-6. ✅ Technical documentation
+3. ✅ Campus building data (KML) + parsed in-app models  
+4. ✅ **Custom campus routing engine** (walkway graph + Dijkstra) integrated with Maps SDK for display  
+5. ✅ README.md with setup instructions  
+6. ✅ Technical documentation (keep aligned with routing architecture)
 
 ### 12.2 Academic Deliverables
 1. ✅ Project report (written document)
@@ -534,17 +535,18 @@ Home Screen
 ## 13. KNOWN LIMITATIONS (MVP)
 
 ### 13.1 Technical Limitations
-- Requires active internet connection (no offline mode)
-- GPS signal required (outdoor use only)
-- Android-only (no iOS version)
-- No real-time traffic or crowd data
+- **Base map** typically requires network access for Google tiles (no dedicated offline map pack in MVP)
+- GPS signal required for dependable live navigation (outdoor use)
+- Android-only (no iOS build in current scope)
+- **Routes are only as good as the walkway graph:** gaps, missing shortcuts, or disconnected subgraphs yield **no route** or suboptimal paths until data is fixed
+- Snap-to-nearest-node behaviour can mis-assign starts/ends if GPS drifts or entrances sit far from the captured network
 - Single language (English)
 
 ### 13.2 Data Limitations
-- Building details limited (names only in MVP)
+- Building details remain simplified (names / types in MVP)
 - No floor-by-floor indoor navigation
-- Entrance points may need field verification
-- No real-time building status (open/closed)
+- Entrance coordinates should be validated against real doors over time
+- Graph edges must be maintained when campus paths change (construction, barriers)
 
 ### 13.3 Functional Limitations
 - No user accounts or personalization
@@ -597,27 +599,28 @@ Home Screen
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Google API quota exceeded | Low | High | Monitor usage, implement caching |
-| GPS accuracy issues | Medium | Medium | Use entrance markers, not building centers |
-| Network connectivity problems | High | Medium | Clear error messages, manual location entry |
-| Device compatibility issues | Low | Medium | Test on multiple devices, min API 21 |
-| Map loading performance | Low | Low | Optimize polygon rendering |
+| ~~Google Directions quota~~ | — | — | **Removed:** routing is local |
+| Incomplete / disconnected graph | Medium | High | Field-walk QA; expand edges; clear UX when unroutable |
+| GPS accuracy / snap-to-graph errors | Medium | Medium | Entrance pins; future map-matching / smoothing |
+| Network connectivity (map tiles) | High | Medium | Explicit errors; consider offline strategies later |
+| Device compatibility | Low | Medium | Test min SDK devices |
+| Maps SDK billing / key misconfiguration | Low | High | Restrict keys; monitor Cloud console |
 
 ### 15.2 Project Risks
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Timeline delays | Medium | Medium | MVP scope strictly maintained |
-| Data accuracy concerns | Low | High | Ground-truthing validation conducted |
-| Scope creep | Medium | High | Clear MVP definition, defer enhancements |
-| API key security breach | Low | High | Proper restrictions configured |
+| Timeline delays | Medium | Medium | Freeze MVP scope; prioritize graph coverage |
+| Data accuracy concerns | Medium | High | Ground-truth walks; supervisor review |
+| Scope creep | Medium | High | Defer Phase 2 items |
+| Maps API key exposure | Low | High | Keys only in `local.properties`; never commit secrets |
 
 ### 15.3 Mitigation Strategies
 - Clear MVP scope to avoid feature creep
-- Regular testing on campus
-- API usage monitoring
-- Backup development plan if APIs fail
-- Documentation of all decisions
+- Regular **walk-the-campus** validation against the graph
+- Monitor **Maps SDK** usage / billing in Google Cloud
+- Treat **unroutable pairs** as actionable graph QA tickets (not merely “API failures”)
+- Keep documentation and thesis materials aligned with the **on-device routing** design
 
 ---
 
@@ -625,8 +628,8 @@ Home Screen
 
 ### 16.1 Technical Success Metrics
 - ✅ App launches without crashes on target devices
-- ✅ Map loads and displays all 42 buildings
-- ✅ Navigation successfully routes between any two buildings
+- ✅ Map loads and displays campus buildings from KML (target inventory: **42** major facilities)
+- ✅ Navigation routes between buildings **whenever the walkway graph contains a path** between snapped entrance nodes
 - ✅ Voice guidance functions correctly
 - ✅ Search finds buildings accurately
 - ✅ App runs smoothly (no lag or freezing)
@@ -650,7 +653,7 @@ Home Screen
 1. A student can open the app and navigate from the main gate to any building without prior knowledge
 2. The system provides accurate directions to building entrances
 3. Voice guidance works without user interaction
-4. All 42 buildings are searchable and navigable
+4. All buildings exposed by the app’s building list are searchable; routing succeeds subject to graph connectivity
 5. System handles errors gracefully
 
 ---
@@ -660,9 +663,8 @@ Home Screen
 ### 17.1 Code Documentation
 - Inline comments for complex logic
 - README.md in repository root
-- API integration guide
-- Setup and installation instructions
-- Troubleshooting guide
+- **Maps SDK key setup** (`local.properties`) and troubleshooting for tile load failures
+- **Routing data:** maintaining `campus_graph.dart` / walkway capture workflow
 
 ### 17.2 User Documentation
 - User manual (PDF)
@@ -673,9 +675,9 @@ Home Screen
 
 ### 17.3 Technical Documentation
 - System architecture diagram
-- Data flow diagrams
-- API integration details
-- Database schema (building data structure)
+- Data flow diagrams (**GPS → graph → Dijkstra → polyline / instructions → UI / TTS**)
+- Maps SDK integration & security notes
+- Building / graph data structures (in-memory models — no server database)
 - Deployment guide
 
 ### 17.4 Academic Documentation
@@ -784,16 +786,17 @@ Home Screen
 - Android Development: https://developer.android.com
 - Dart Language: https://dart.dev
 
-### Appendix B: Data Files
-- Campus buildings KML: `Lead City University Campus Map.kml`
-- Building data JSON: (Generated from KML)
-- API configuration: `android/app/src/main/AndroidManifest.xml`
+### Appendix B: Data & routing source files
+- Campus buildings KML: `assets/Lead City University Campus Map.kml`
+- Parsed building models: `lib/data/buildings_data.dart`, `lib/models/building.dart`, `lib/services/kml_parser_service.dart`
+- Walkway graph & routing: `lib/data/campus_graph.dart`, `lib/services/campus_routing_service.dart`, `lib/services/navigation_service.dart`
+- Voice navigation: `lib/services/voice_navigation_controller.dart`, `lib/services/voice_service.dart`
+- Android Maps key wiring: `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`
 
-### Appendix C: API Credentials
-- Project: LeadCity-Navigation
-- API Key: AIzaSyBLGPUKURvQPmUDYcRJJkNTLk4N9tbxzHQ
-- Package: com.leadcity.leadcity_navigation
-- Restrictions: Android apps only, Maps SDK for Android
+### Appendix C: Credentials & secrets
+- Create **`GOOGLE_MAPS_API_KEY`** in `android/local.properties` (never commit real keys to Git)
+- Cloud Console: enable **Maps SDK for Android**; restrict key by package + SHA-1
+- No Directions / Places keys required for routing in the current architecture
 
 ---
 
@@ -801,6 +804,7 @@ Home Screen
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 2.0 | May 16, 2026 | [Your Name] | Document updated for **on-device Dijkstra routing**, campus walkway graph, local search; Maps SDK scoped to display-only; revised risks & milestones |
 | 1.0 | Dec 21, 2024 | [Your Name] | Initial project overview document |
 
 ---
