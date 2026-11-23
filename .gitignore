@@ -47,3 +47,5 @@ app.*.map.json
 # Android local properties (contains API keys and SDK paths)
 android/local.properties
 android/.gradle
+# Release builds (published as GitHub Release assets, not committed)
+dist/
